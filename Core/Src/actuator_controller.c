@@ -10,10 +10,8 @@
 
 void ActuatorController_Init(ActuatorStruct *actuator,
 		FeedbackUnit feedbackMinimum, FeedbackUnit feedbackMaximum,
-		FeedbackReaderStruct feedbackReader,
-		GPIO_TypeDef *motorForward, uint16_t pinForward,
-		GPIO_TypeDef *motorBackward, uint16_t pinBackward)
-{
+		FeedbackReaderStruct feedbackReader, GPIO_TypeDef *motorForward,
+		uint16_t pinForward, GPIO_TypeDef *motorBackward, uint16_t pinBackward) {
 	memset(actuator, 0, sizeof(ActuatorStruct));
 
 	actuator->feedbackMinimum = feedbackMinimum;
@@ -23,4 +21,9 @@ void ActuatorController_Init(ActuatorStruct *actuator,
 	actuator->pinForward = pinForward;
 	actuator->gpioBackward = motorBackward;
 	actuator->pinBackward = pinBackward;
+}
+
+FeedbackUnit ActuatorController_UpdateFeedback(ActuatorStruct *actuator) {
+	actuator->feedback = FeedbackReader_GetFeedback(&actuator->feedbackReader);
+	return actuator->feedback;
 }

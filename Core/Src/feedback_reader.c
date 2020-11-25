@@ -15,4 +15,8 @@ void FeedbackReader_Init(FeedbackReaderStruct *reader, uint16_t *rawAdc)
 	reader->rawAdc = rawAdc;
 }
 
-
+FeedbackUnit FeedbackReader_GetFeedback(FeedbackReaderStruct *reader)
+{
+	// TODO: делать фильтрацию
+	return *reader->rawAdc;
+}

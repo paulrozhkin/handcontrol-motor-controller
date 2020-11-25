@@ -49,36 +49,49 @@ typedef struct {
 /**
  * @brief Выполняет инициализацию конфигурации отдельного пальца. Выполняет
  *       установку конфигурации пина в соотвесвтующие поля структуры.
- * @param  finger Структура, которая должна быть инициализирована.
- * @param  actuator Приводов, который является пальцем.
+ * @param finger Структура, которая должна быть инициализирована.
+ * @param actuator Приводов, который является пальцем.
  * @retval None.
  */
 void Finger_Init(FingerStruct *finger, ActuatorStruct actuator);
 
 /**
  *	@brief Получить новый feedback и обновить позицию.
+ *	@param finger FingerStruct.
  *	@retval None.
  */
-void Finger_UpdatePosition();
+void Finger_UpdatePosition(FingerStruct *finger);
 
 /**
  *	@brief Запросить установку новой позиции. Установка новой позиции начнется при вызове UpdatePosition.
+ *	@param finger FingerStruct.
  *	@param newPosition
  *	@retval None.
  */
-void Finger_SetNewPosition(FingerPositionUnit newPosition);
+void Finger_SetNewPosition(FingerStruct *finger, FingerPositionUnit newPosition);
 
 /**
  * @brief Запросить установку requiredPosition. Установка позиции начнется при вызове UpdatePosition.
  * Может быть использована, если палец находится в состоянии FINGER_DESYNCHRONIZATION.
+ * @param finger FingerStruct.
  * @retval None.
  */
-void Finger_SetPosition();
+void Finger_SetPosition(FingerStruct *finger);
 
 /*
  * @brief Выполнить принудительную остановку пальца. requiredPosition будет сброшена.
+ * @param finger FingerStruct.
  * @retval None.
  */
-void Finger_Stop();
+void Finger_Stop(FingerStruct *finger);
+
+/**
+ * @brieft Расчитать позицию пальца в угловом соотношение исходя из обратной связи привода.
+ * @param finger FingerStruct.
+ * @param feedback текущая обратная связь.
+ * @retval Позиция в угловом соотношении.
+ */
+FingerPositionUnit Finger_GetPositionFromFeedback(FingerStruct *finger,
+		FeedbackUnit feedback);
 
 #endif /* INC_FINGER_H_ */

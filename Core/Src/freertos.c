@@ -264,45 +264,50 @@ void StartDefaultTask(void const *argument) {
 
 	/* Infinite loop */
 	for (;;) {
-		ProtocolStruct receiveData;
-		xQueueReceive(spiReceiveQueue, &receiveData, portMAX_DELAY);
-		switch (receiveData.Command) {
-		case Telemetry: {
-			ProtocolStruct responseTelemetry = Handle_Telemetry_Command();
-			memcpy(&responseSpi, &responseTelemetry, sizeof(ProtocolStruct));
-			//responseSpi.CurrentRegime = test;
-			HAL_SPI_TransmitReceive_IT(&hspi2, (uint8_t*) &responseSpi,
-					trashBuffer, sizeof(ProtocolStruct));
-
-			break;
-		}
-		case SetPositions:
-			break;
-
-		case CalibrationSettingsSave:
-			break;
-
-		case CalibrationSettingsGet:
-			break;
-
-		case CalibrationStartAuto:
-			break;
-
-		case CalibrationStartManual:
-			break;
-
-		case CalibrationStop:
-			break;
-
-		default:
-			break;
-		}
+		HandController_UpdateFingers(&handConfig);
+		osDelay(1);
 	}
 	/* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
+void ProtocolParser() {
+	ProtocolStruct receiveData;
+	xQueueReceive(spiReceiveQueue, &receiveData, portMAX_DELAY);
+	switch (receiveData.Command) {
+	case Telemetry: {
+		ProtocolStruct responseTelemetry = Handle_Telemetry_Command();
+		memcpy(&responseSpi, &responseTelemetry, sizeof(ProtocolStruct));
+		//responseSpi.CurrentRegime = test;
+		HAL_SPI_TransmitReceive_IT(&hspi2, (uint8_t*) &responseSpi, trashBuffer,
+				sizeof(ProtocolStruct));
+
+		break;
+	}
+	case SetPositions:
+		break;
+
+	case CalibrationSettingsSave:
+		break;
+
+	case CalibrationSettingsGet:
+		break;
+
+	case CalibrationStartAuto:
+		break;
+
+	case CalibrationStartManual:
+		break;
+
+	case CalibrationStop:
+		break;
+
+	default:
+		break;
+	}
+}
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	if (hspi == &hspi2) {

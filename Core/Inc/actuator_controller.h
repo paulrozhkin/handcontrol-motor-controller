@@ -58,9 +58,8 @@ typedef struct {
  */
 void ActuatorController_Init(ActuatorStruct *actuator,
 		FeedbackUnit feedbackMinimum, FeedbackUnit feedbackMaximum,
-		FeedbackReaderStruct feedbackReader,
-		GPIO_TypeDef *motorForward, uint16_t pinForward,
-		GPIO_TypeDef *motorBackward, uint16_t pinBackward);
+		FeedbackReaderStruct feedbackReader, GPIO_TypeDef *motorForward,
+		uint16_t pinForward, GPIO_TypeDef *motorBackward, uint16_t pinBackward);
 
 /**
  * @brief  Движение привода вперед (привод выдвигается).
@@ -97,6 +96,7 @@ FeedbackUnit ActuatorController_UpdateFeedback(ActuatorStruct *actuator);
  * @param feedbackMaximum Новое максимальное положение привода.
  * @retval None.
  */
-void ActuatorController_UpdateFeedbackLimits(ActuatorStruct *actuator, FeedbackUnit feedbackMinimum, FeedbackUnit feedbackMaximum);
+void ActuatorController_UpdateFeedbackLimits(ActuatorStruct *actuator,
+		FeedbackUnit feedbackMinimum, FeedbackUnit feedbackMaximum);
 
 #endif /* INC_ACTUATOR_CONTROLLER_H_ */

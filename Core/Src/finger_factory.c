@@ -15,7 +15,7 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 
 	switch (fingerName) {
 	// MOTOR 1
-	case FINGER_LITTLE: {
+	case FINGER_NAME_LITTLE: {
 		ActuatorStruct littleActuator;
 		ActuatorController_Init(&littleActuator,
 				feedbackLimits.littleFingerFeedback.minimum,
@@ -27,7 +27,7 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 		break;
 	}
 		// MOTOR 2
-	case FINGER_RING: {
+	case FINGER_NAME_RING: {
 		ActuatorStruct ringActuator;
 		ActuatorController_Init(&ringActuator,
 				feedbackLimits.ringFingerFeedback.minimum,
@@ -39,7 +39,7 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 		break;
 	}
 		// MOTOR 3
-	case FINGER_MIDDLE: {
+	case FINGER_NAME_MIDDLE: {
 		ActuatorStruct middleActuator;
 		ActuatorController_Init(&middleActuator,
 				feedbackLimits.ringFingerFeedback.minimum,
@@ -51,7 +51,7 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 		break;
 	}
 		// MOTOR 4
-	case FINGER_INDEX: {
+	case FINGER_NAME_INDEX: {
 		ActuatorStruct indexActuator;
 		ActuatorController_Init(&indexActuator,
 				feedbackLimits.indexFingerFeedback.minimum,
@@ -63,7 +63,7 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 		break;
 	}
 		// MOTOR 5
-	case FINGER_THUMB: {
+	case FINGER_NAME_THUMB: {
 		ActuatorStruct thumbActuator;
 		ActuatorController_Init(&thumbActuator,
 				feedbackLimits.thumbFingerFeedback.minimum,
@@ -75,7 +75,7 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 		break;
 	}
 		// MOTOR 6
-	case FINGER_THUMB_EJECTOR: {
+	case FINGER_NAME_THUMB_EJECTOR: {
 		ActuatorStruct thumbEjectorActuator;
 		ActuatorController_Init(&thumbEjectorActuator,
 				feedbackLimits.thumbEjectorFeedback.minimum,

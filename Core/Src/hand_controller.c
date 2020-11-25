@@ -8,19 +8,36 @@
 #include "hand_controller.h"
 #include "string.h"
 
-void HandController_Init(HandStruct *handStruct,
-		FeedbackReaderStruct littleFingerReader, FeedbackReaderStruct ringFingerReader,
-		FeedbackReaderStruct middleFingerReader, FeedbackReaderStruct indexFingerReader,
-		FeedbackReaderStruct thumbFingerReader, FeedbackReaderStruct thumbEjectorReader)
-{
-	memset(handStruct, 0, sizeof(HandStruct));
+void HandController_Init(HandStruct *hand,
+		FeedbackReaderStruct littleFingerReader,
+		FeedbackReaderStruct ringFingerReader,
+		FeedbackReaderStruct middleFingerReader,
+		FeedbackReaderStruct indexFingerReader,
+		FeedbackReaderStruct thumbFingerReader,
+		FeedbackReaderStruct thumbEjectorReader) {
+	memset(hand, 0, sizeof(HandStruct));
 
-	handStruct->currentMode = InitializationMode;
+	hand->currentMode = InitializationMode;
 
-	FingerFactory_CreateFinger(&handStruct->littleFinger, FINGER_LITTLE, littleFingerReader);
-	FingerFactory_CreateFinger(&handStruct->ringFinger, FINGER_RING, ringFingerReader);
-	FingerFactory_CreateFinger(&handStruct->middleFinger, FINGER_MIDDLE, middleFingerReader);
-	FingerFactory_CreateFinger(&handStruct->indexFinger, FINGER_INDEX, indexFingerReader);
-	FingerFactory_CreateFinger(&handStruct->thumbFinger, FINGER_THUMB, thumbFingerReader);
-	FingerFactory_CreateFinger(&handStruct->thumbEjector, FINGER_THUMB_EJECTOR, thumbEjectorReader);
+	FingerFactory_CreateFinger(&hand->littleFinger, FINGER_NAME_LITTLE,
+			littleFingerReader);
+	FingerFactory_CreateFinger(&hand->ringFinger, FINGER_NAME_RING,
+			ringFingerReader);
+	FingerFactory_CreateFinger(&hand->middleFinger, FINGER_NAME_MIDDLE,
+			middleFingerReader);
+	FingerFactory_CreateFinger(&hand->indexFinger, FINGER_NAME_INDEX,
+			indexFingerReader);
+	FingerFactory_CreateFinger(&hand->thumbFinger, FINGER_NAME_THUMB,
+			thumbFingerReader);
+	FingerFactory_CreateFinger(&hand->thumbEjector, FINGER_NAME_THUMB_EJECTOR,
+			thumbEjectorReader);
+}
+
+void HandController_UpdateFingers(HandStruct *hand) {
+	Finger_UpdatePosition(&hand->littleFinger);
+	Finger_UpdatePosition(&hand->ringFinger);
+	Finger_UpdatePosition(&hand->middleFinger);
+	Finger_UpdatePosition(&hand->indexFinger);
+	Finger_UpdatePosition(&hand->thumbFinger);
+	Finger_UpdatePosition(&hand->thumbEjector);
 }

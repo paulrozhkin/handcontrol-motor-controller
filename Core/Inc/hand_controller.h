@@ -10,6 +10,7 @@
 
 #include "feedback_reader.h"
 #include "finger_factory.h"
+#include "finger.h"
 
 /* Текущее состояние работы драйвера линейных двигателей. */
 enum TypeWork {
@@ -54,9 +55,17 @@ typedef struct {
  * @param thumbEjector ридер обратной связи мезинца раздвигателя большого пальца.
  * @retval None.
  */
-void HandController_Init(HandStruct *handStruct,
+void HandController_Init(HandStruct *hand,
 		FeedbackReaderStruct littleFingerReader, FeedbackReaderStruct ringFingerReader,
 		FeedbackReaderStruct middleFingerReader, FeedbackReaderStruct indexFinger,
 		FeedbackReaderStruct thumbFinger, FeedbackReaderStruct thumbEjector);
+
+/**
+ *	@brief Выполняет обновление текущих позиций для каждого пальца.
+ *	При необходимости выполняет установку позиций.
+ *	@param handStruct HandStruct.
+ *	@retval None.
+ */
+void HandController_UpdateFingers(HandStruct *handStruct);
 
 #endif /* INC_HAND_CONTROLLER_H_ */
