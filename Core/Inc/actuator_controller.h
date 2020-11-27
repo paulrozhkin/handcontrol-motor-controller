@@ -21,6 +21,9 @@ typedef struct {
 	/* Максимальное положение привода. */
 	FeedbackUnit feedbackMaximum;
 
+	/* Кол-во единиц обратной связи на один градус */
+	double feedbackUnitPerAngle;
+
 	/* Ридер для чтения обратной связи. */
 	FeedbackReaderStruct feedbackReader;
 

@@ -11,11 +11,11 @@ void HandStorage_SaveFeedback(HandStorageFingersFeedbackDaoStruct feedback) {
 
 }
 
-HandStorageFingersFeedbackDaoStruct HandStorage_GetFeedback() {
+HandStorageFingersFeedbackDaoStruct HandStorage_GetFeedback(void) {
 	HandStorageFingersFeedbackDaoStruct result;
 
-	result.littleFingerFeedback.minimum = 0;
-	result.littleFingerFeedback.maximum = 4095;
+	result.littleFingerFeedback.minimum = 3700;
+	result.littleFingerFeedback.maximum = 300;
 
 	result.ringFingerFeedback.minimum = 0;
 	result.ringFingerFeedback.maximum = 4095;

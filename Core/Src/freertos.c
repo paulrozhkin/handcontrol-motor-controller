@@ -283,7 +283,6 @@ void ProtocolParser() {
 		//responseSpi.CurrentRegime = test;
 		HAL_SPI_TransmitReceive_IT(&hspi2, (uint8_t*) &responseSpi, trashBuffer,
 				sizeof(ProtocolStruct));
-
 		break;
 	}
 	case SetPositions:

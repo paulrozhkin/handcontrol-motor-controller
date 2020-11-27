@@ -8,6 +8,15 @@
 #ifndef INC_FINGER_H_
 #define INC_FINGER_H_
 
+/* Допустимый пределен смещения позиций в угловом соотношении. */
+#define POSITION_OFFSET 2
+/* Максимальное кол-во раз перед остановкой пальца, когда текущая и предыдущая позиция были равны,
+ * но позиция не была установлена в требуемое значение. */
+#define MAX_COUNT_EQUALS_POSITION_EMERGENCY 50
+/* Максимальное кол-во раз равенства текущей и предыдущей позиции перед тем,
+ *  как мотор перейдет в состояние успешной установки запрошенной позиции. */
+#define MAX_COUNT_EQUALS_POSITION 3
+
 #include "actuator_controller.h"
 
 typedef uint8_t FingerPositionUnit;
@@ -36,6 +45,15 @@ enum FingerStateType {
 typedef struct {
 	/* Текущая позиция пальца. */
 	FingerPositionUnit position;
+
+	/* Предыдущая позиция пальца. */
+	FingerPositionUnit previousPosition;
+
+	/* Кол-во раз, когда текущая и предыдущая позиция были одинаковыми */
+	int countEqualsCurrentAndPreviousPositions;
+
+	/* Кол-во раз, когда текущая и предыдущая позиция были одинаковыми, но позиция не была запрашиваемой */
+	int countEqualsCurrentAndPreviousPositionsEmergency;
 
 	/* Состояние пальца. */
 	enum FingerStateType status;

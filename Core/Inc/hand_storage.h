@@ -38,6 +38,6 @@ void HandStorage_SaveFeedback(HandStorageFingersFeedbackDaoStruct feedback);
  * @brief Получить информацию калибровки.
  * @retval инимальные и максимальные положения при калбировки для каждого пальца.
  */
-HandStorageFingersFeedbackDaoStruct HandStorage_GetFeedback();
+HandStorageFingersFeedbackDaoStruct HandStorage_GetFeedback(void);
 
 #endif /* INC_HAND_STORAGE_H_ */
