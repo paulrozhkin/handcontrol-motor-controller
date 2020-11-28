@@ -14,23 +14,23 @@ void HandStorage_SaveFeedback(HandStorageFingersFeedbackDaoStruct feedback) {
 HandStorageFingersFeedbackDaoStruct HandStorage_GetFeedback(void) {
 	HandStorageFingersFeedbackDaoStruct result;
 
-	result.littleFingerFeedback.minimum = 3700;
-	result.littleFingerFeedback.maximum = 300;
+	result.littleFingerFeedback.backwardFeedbackLimit = 3700;
+	result.littleFingerFeedback.forwardFeedbackLimit = 300;
 
-	result.ringFingerFeedback.minimum = 0;
-	result.ringFingerFeedback.maximum = 4095;
+	result.ringFingerFeedback.backwardFeedbackLimit = 3700;
+	result.ringFingerFeedback.forwardFeedbackLimit = 300;
 
-	result.middleFingerFeedback.minimum = 0;
-	result.middleFingerFeedback.maximum = 4095;
+	result.middleFingerFeedback.backwardFeedbackLimit = 3700;
+	result.middleFingerFeedback.forwardFeedbackLimit = 300;
 
-	result.indexFingerFeedback.minimum = 0;
-	result.indexFingerFeedback.maximum = 4095;
+	result.indexFingerFeedback.backwardFeedbackLimit = 3700;
+	result.indexFingerFeedback.forwardFeedbackLimit = 300;
 
-	result.thumbFingerFeedback.minimum = 0;
-	result.thumbFingerFeedback.maximum = 4095;
+	result.thumbFingerFeedback.backwardFeedbackLimit = 3700;
+	result.thumbFingerFeedback.forwardFeedbackLimit = 300;
 
-	result.thumbEjectorFeedback.minimum = 0;
-	result.thumbEjectorFeedback.maximum = 4095;
+	result.thumbEjectorFeedback.backwardFeedbackLimit = 3700;
+	result.thumbEjectorFeedback.forwardFeedbackLimit = 300;
 
 	return result;
 }

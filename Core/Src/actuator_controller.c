@@ -8,6 +8,7 @@
 #include "actuator_controller.h"
 #include "string.h"
 #include "stdlib.h"
+#include "position_to_feedback_converter.h"
 
 void ActuatorController_Init(ActuatorStruct *actuator,
 		FeedbackUnit feedbackMinimum, FeedbackUnit feedbackMaximum,
@@ -15,10 +16,10 @@ void ActuatorController_Init(ActuatorStruct *actuator,
 		uint16_t pinForward, GPIO_TypeDef *motorBackward, uint16_t pinBackward) {
 	memset(actuator, 0, sizeof(ActuatorStruct));
 
-	actuator->feedbackMinimum = feedbackMinimum;
-	actuator->feedbackMaximum = feedbackMaximum;
+	actuator->backwardFeedbackLimit = feedbackMinimum;
+	actuator->forwardFeedbackLimit = feedbackMaximum;
 
-	actuator->feedbackUnitPerAngle = abs(actuator->feedbackMaximum - actuator->feedbackMinimum) / 180.0;
+	actuator->feedbackUnitPerAngle = PositionToFeedbackConverter_GetUnitPerAngle(feedbackMinimum, feedbackMaximum);
 
 	actuator->feedbackReader = feedbackReader;
 	actuator->gpioForward = motorForward;

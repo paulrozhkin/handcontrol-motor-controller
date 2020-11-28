@@ -29,6 +29,9 @@ HEADER_ROOT=../Core/Inc
 SRC_ROOT=../Core/Src
 UNITY_ROOT=./unity
 TEST_ROOT=.
+DRIVERS_ROOT=../Drivers/STM32F1xx_HAL_Driver/Inc
+CMSIS_ROOT=../Drivers/CMSIS/Include
+ST_ROOT=../Drivers/CMSIS/Device/ST/STM32F1xx/Include
 
 CFLAGS=-std=c99
 CFLAGS += -Wall
@@ -46,22 +49,25 @@ CFLAGS += -Wundef
 CFLAGS += -Wold-style-definition
 #CFLAGS += -Wno-misleading-indentation
 
+DEFINE = STM32F103xB
+
 TARGET_BASE1=all_tests
 TARGET1 = $(TARGET_BASE1)$(TARGET_EXTENSION)
 SRC_FILES1=\
   $(UNITY_ROOT)/src/unity.c \
   $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c \
   $(SRC_ROOT)/hand_storage.c \
-  $(TEST_ROOT)/TestDriverMotor.c \
-  $(TEST_ROOT)/test_runners/TestDriverMotor_Runner.c \
+  $(SRC_ROOT)/position_to_feedback_converter.c -lm \
+  $(TEST_ROOT)/TestPositionToFeedbackConverter.c \
+  $(TEST_ROOT)/test_runners/TestPositionToFeedbackConverter_Runner.c \
   $(TEST_ROOT)/test_runners/all_tests.c
-INC_DIRS=-Isrc -I$(UNITY_ROOT)/src -I$(HEADER_ROOT) -I$(UNITY_ROOT)/extras/fixture/src
+INC_DIRS=-Isrc -I$(UNITY_ROOT)/src -I$(HEADER_ROOT) -I$(DRIVERS_ROOT) -I$(ST_ROOT) -I$(CMSIS_ROOT) -I$(UNITY_ROOT)/extras/fixture/src
 SYMBOLS=-DUNITY_FIXTURE_NO_EXTRAS
 
 all: clean default
 
 default:
-	$(C_COMPILER) $(CFLAGS) $(INC_DIRS) $(SYMBOLS) $(SRC_FILES1) -o ./bin/$(TARGET1)
+	$(C_COMPILER) $(CFLAGS) -D$(DEFINE) $(INC_DIRS) $(SYMBOLS) $(SRC_FILES1) -o ./bin/$(TARGET1)
 	- ./bin/$(TARGET1) -v
 
 clean:

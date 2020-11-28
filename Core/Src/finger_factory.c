@@ -18,8 +18,8 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 	case FINGER_NAME_LITTLE: {
 		ActuatorStruct littleActuator;
 		ActuatorController_Init(&littleActuator,
-				feedbackLimits.littleFingerFeedback.minimum,
-				feedbackLimits.littleFingerFeedback.maximum, feedbackReader,
+				feedbackLimits.littleFingerFeedback.backwardFeedbackLimit,
+				feedbackLimits.littleFingerFeedback.forwardFeedbackLimit, feedbackReader,
 				GPIOB, GPIO_PIN_10,
 				GPIOB, GPIO_PIN_11);
 
@@ -30,8 +30,8 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 	case FINGER_NAME_RING: {
 		ActuatorStruct ringActuator;
 		ActuatorController_Init(&ringActuator,
-				feedbackLimits.ringFingerFeedback.minimum,
-				feedbackLimits.ringFingerFeedback.maximum, feedbackReader,
+				feedbackLimits.ringFingerFeedback.backwardFeedbackLimit,
+				feedbackLimits.ringFingerFeedback.forwardFeedbackLimit, feedbackReader,
 				GPIOB, GPIO_PIN_0,
 				GPIOB, GPIO_PIN_1);
 
@@ -42,8 +42,8 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 	case FINGER_NAME_MIDDLE: {
 		ActuatorStruct middleActuator;
 		ActuatorController_Init(&middleActuator,
-				feedbackLimits.ringFingerFeedback.minimum,
-				feedbackLimits.ringFingerFeedback.maximum, feedbackReader,
+				feedbackLimits.ringFingerFeedback.backwardFeedbackLimit,
+				feedbackLimits.ringFingerFeedback.forwardFeedbackLimit, feedbackReader,
 				GPIOB, GPIO_PIN_3,
 				GPIOB, GPIO_PIN_12);
 
@@ -54,8 +54,8 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 	case FINGER_NAME_INDEX: {
 		ActuatorStruct indexActuator;
 		ActuatorController_Init(&indexActuator,
-				feedbackLimits.indexFingerFeedback.minimum,
-				feedbackLimits.indexFingerFeedback.maximum, feedbackReader,
+				feedbackLimits.indexFingerFeedback.backwardFeedbackLimit,
+				feedbackLimits.indexFingerFeedback.forwardFeedbackLimit, feedbackReader,
 				GPIOB, GPIO_PIN_5,
 				GPIOB, GPIO_PIN_4);
 
@@ -66,8 +66,8 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 	case FINGER_NAME_THUMB: {
 		ActuatorStruct thumbActuator;
 		ActuatorController_Init(&thumbActuator,
-				feedbackLimits.thumbFingerFeedback.minimum,
-				feedbackLimits.thumbFingerFeedback.maximum, feedbackReader,
+				feedbackLimits.thumbFingerFeedback.backwardFeedbackLimit,
+				feedbackLimits.thumbFingerFeedback.forwardFeedbackLimit, feedbackReader,
 				GPIOB, GPIO_PIN_6,
 				GPIOB, GPIO_PIN_7);
 
@@ -78,8 +78,8 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 	case FINGER_NAME_THUMB_EJECTOR: {
 		ActuatorStruct thumbEjectorActuator;
 		ActuatorController_Init(&thumbEjectorActuator,
-				feedbackLimits.thumbEjectorFeedback.minimum,
-				feedbackLimits.thumbEjectorFeedback.maximum, feedbackReader,
+				feedbackLimits.thumbEjectorFeedback.backwardFeedbackLimit,
+				feedbackLimits.thumbEjectorFeedback.forwardFeedbackLimit, feedbackReader,
 				GPIOB, GPIO_PIN_8,
 				GPIOB, GPIO_PIN_9);
 

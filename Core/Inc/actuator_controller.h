@@ -16,10 +16,10 @@ typedef struct {
 	FeedbackUnit feedback;
 
 	/* Минимальное положение привода. */
-	FeedbackUnit feedbackMinimum;
+	FeedbackUnit backwardFeedbackLimit;
 
 	/* Максимальное положение привода. */
-	FeedbackUnit feedbackMaximum;
+	FeedbackUnit forwardFeedbackLimit;
 
 	/* Кол-во единиц обратной связи на один градус */
 	double feedbackUnitPerAngle;
@@ -48,8 +48,8 @@ typedef struct {
  * @brief Выполняет инициализацию конфигурации отдельного пальца. Выполняет
  *       установку конфигурации пина в соотвесвтующие поля структуры.
  * @param actuator Привод, который должна быть инициализирован.
- * @param feedbackMinimum Минимальное положение привода.
- * @param feedbackMaximum Максимальное положение привода.
+ * @param backwardFeedbackLimit Максимальное положение привода при сжатии.
+ * @param forwardFeedbackLimit Максимальное положение привода при выдвижении.
  * @param feedbackReader Ридер для чтения обратной связи.
  * @param motorForward Структура GPIO к которой подключен вывод привода для движения вперед.
  *       (Движение вперед - при подаче логической единицы на этот пин мотор будет разжимать палец).
@@ -60,7 +60,7 @@ typedef struct {
  * @retval None.
  */
 void ActuatorController_Init(ActuatorStruct *actuator,
-		FeedbackUnit feedbackMinimum, FeedbackUnit feedbackMaximum,
+		FeedbackUnit backwardFeedbackLimit, FeedbackUnit forwardFeedbackLimit,
 		FeedbackReaderStruct feedbackReader, GPIO_TypeDef *motorForward,
 		uint16_t pinForward, GPIO_TypeDef *motorBackward, uint16_t pinBackward);
 
@@ -100,6 +100,6 @@ FeedbackUnit ActuatorController_UpdateFeedback(ActuatorStruct *actuator);
  * @retval None.
  */
 void ActuatorController_UpdateFeedbackLimits(ActuatorStruct *actuator,
-		FeedbackUnit feedbackMinimum, FeedbackUnit feedbackMaximum);
+		FeedbackUnit backwardFeedbackLimit, FeedbackUnit forwardFeedbackLimit);
 
 #endif /* INC_ACTUATOR_CONTROLLER_H_ */

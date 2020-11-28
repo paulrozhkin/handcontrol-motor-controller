@@ -2,7 +2,7 @@
 
 static void RunAllTests(void)
 {
-  RUN_TEST_GROUP(ProductionCode);
+  RUN_TEST_GROUP(PositionToFeedbackConverter);
 }
 
 int main(int argc, const char * argv[])

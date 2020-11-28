@@ -11,11 +11,11 @@
 #include "feedback_reader.h"
 
 typedef struct {
-	/* Минимальное положение привода. */
-	uint16_t minimum;
+	/* Максимальное положение привода при сжатии. */
+	uint16_t backwardFeedbackLimit;
 
-	/* Максимальное положение привода. */
-	uint16_t maximum;
+	/* Максимальное положение привода при выдвижении. */
+	uint16_t forwardFeedbackLimit;
 } HandStorageActuatorFeedbackDaoStruct;
 
 typedef struct {

@@ -24,7 +24,7 @@ void Finger_UpdatePosition(FingerStruct *finger) {
 			&finger->actuator);
 
 	finger->position = PositionToFeedbackConverter_ConvertBack(feedback,
-			finger->actuator.feedbackMinimum, finger->actuator.feedbackMaximum,
+			finger->actuator.backwardFeedbackLimit, finger->actuator.forwardFeedbackLimit,
 			finger->actuator.feedbackUnitPerAngle);
 
 	switch (finger->status) {
