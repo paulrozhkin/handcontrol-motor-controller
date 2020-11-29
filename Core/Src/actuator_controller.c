@@ -28,25 +28,27 @@ void ActuatorController_Init(ActuatorStruct *actuator,
 	actuator->pinBackward = pinBackward;
 }
 
-FeedbackUnit ActuatorController_UpdateFeedback(ActuatorStruct *actuator) {
-	actuator->feedback = FeedbackReader_GetFeedback(&actuator->feedbackReader);
-	return actuator->feedback;
+FeedbackUnit ActuatorController_GetFeedback(ActuatorStruct *actuator) {
+	return FeedbackReader_GetFeedback(&actuator->feedbackReader);
 }
 
 void ActuatorController_Stop(ActuatorStruct *actuator)
 {
+	actuator->currentDirection = DIRECTION_NONE;
 	HAL_GPIO_WritePin(actuator->gpioBackward, actuator->pinBackward, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(actuator->gpioForward, actuator->pinForward, GPIO_PIN_RESET);
 }
 
 void ActuatorController_MoveBackward(ActuatorStruct *actuator)
 {
+	actuator->currentDirection = DIRECTION_BACKWARD;
 	HAL_GPIO_WritePin(actuator->gpioBackward, actuator->pinBackward, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(actuator->gpioForward, actuator->pinForward, GPIO_PIN_RESET);
 }
 
 void ActuatorController_MoveForward(ActuatorStruct *actuator)
 {
+	actuator->currentDirection = DIRECTION_FORWARD;
 	HAL_GPIO_WritePin(actuator->gpioBackward, actuator->pinBackward, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(actuator->gpioForward, actuator->pinForward, GPIO_PIN_SET);
 }

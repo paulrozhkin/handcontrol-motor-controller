@@ -14,65 +14,109 @@
 void Finger_Init(FingerStruct *finger, ActuatorStruct actuator) {
 	memset(finger, 0, sizeof(FingerStruct));
 
-	finger->actuator = actuator;
+	finger->actuatorInfo = actuator;
 	finger->status = FINGER_INITIALIZATION;
 }
 
 void Finger_UpdatePosition(FingerStruct *finger) {
 	// Обновляем feedback
-	FeedbackUnit feedback = ActuatorController_UpdateFeedback(
-			&finger->actuator);
-
-	finger->position = PositionToFeedbackConverter_ConvertBack(feedback,
-			finger->actuator.backwardFeedbackLimit, finger->actuator.forwardFeedbackLimit,
-			finger->actuator.feedbackUnitPerAngle);
+	finger->actuatorPosition = ActuatorController_GetFeedback(
+			&finger->actuatorInfo);
 
 	switch (finger->status) {
-	case FINGER_INITIALIZATION:
+	case FINGER_INITIALIZATION: {
 		finger->status = FINGER_REQUIRED_EMPTY;
 		break;
-	case FINGER_REQUEST_SET_POSITION:
-		finger->status = FINGER_SETING_POSITION;
-		break;
-	case FINGER_SETING_POSITION: {
-		bool isPositionsEquals = abs(
-				finger->position - finger->previousPosition);
-		if (isPositionsEquals) {
-			finger->countEqualsCurrentAndPreviousPositionsEmergency++;
+	}
+	case FINGER_REQUEST_SET_POSITION: {
+		// Если запрашиваемое положение корректное.
+		if (finger->requiredActuatorPosition
+				>= finger->actuatorInfo.forwardFeedbackLimit
+				&& finger->requiredActuatorPosition
+						<= finger->actuatorInfo.backwardFeedbackLimit) {
 
-			if (MAX_COUNT_EQUALS_POSITION_EMERGENCY
-					== finger->countEqualsCurrentAndPreviousPositionsEmergency) {
-				ActuatorController_Stop(&finger->actuator);
-				finger->status = FINGER_ERROR;
+			// Устанвливаем направление движения
+			if (finger->requiredActuatorPosition >= finger->actuatorPosition) {
+				finger->requiredDirectionMotion = DIRECTION_BACKWARD;
+			} else {
+				finger->requiredDirectionMotion = DIRECTION_FORWARD;
 			}
-		}
 
-		if (abs(finger->requiredPosition - finger->position) >= POSITION_OFFSET) {
-			finger->countEqualsCurrentAndPreviousPositions++;
-
-			if (MAX_COUNT_EQUALS_POSITION
-					== finger->countEqualsCurrentAndPreviousPositions) {
-				ActuatorController_Stop(&finger->actuator);
-				finger->status = FINGER_SET;
-			}
-		}
-		if (finger->requiredPosition > finger->position) {
-			ActuatorController_MoveBackward(&finger->actuator);
-		} else if (finger->requiredPosition - finger->position) {
-			ActuatorController_MoveForward(&finger->actuator);
+			finger->countEqualsCurrentAndRequiredActuatorPosition = 0;
+			// Начинаем установку положения.
+			finger->status = FINGER_SETTING_POSITION;
 		} else {
+			/* Если запрашиваемое положение не входит в лимиты привода, то устанавливаем ошибку. */
 			finger->status = FINGER_ERROR;
 		}
 		break;
 	}
-	case FINGER_SET:
-		if (abs(finger->requiredPosition < finger->position) >= POSITION_OFFSET) {
-			finger->status = FINGER_DESYNCHRONIZATION;
+	case FINGER_SETTING_POSITION: {
+		bool beyondRequiredPosition = false;
+
+		// Если мы вышли за запрашиваемую позицию при сжатии
+		if (finger->requiredDirectionMotion == DIRECTION_BACKWARD
+				&& finger->requiredActuatorPosition
+						< finger->actuatorPosition) {
+			beyondRequiredPosition = true;
+		}
+
+		// Если мы вышли за запрашиваемую позицию при разжатии
+		if (finger->requiredDirectionMotion == DIRECTION_FORWARD
+				&& finger->requiredActuatorPosition
+						> finger->actuatorPosition) {
+			beyondRequiredPosition = true;
+		}
+
+		// Если запрашиваемое положение и текущее положение равны,
+		// 	либо мы находимся уже за пределами запрашиваемого положения.
+		if (beyondRequiredPosition
+				|| abs(
+						finger->requiredActuatorPosition
+								- finger->actuatorPosition)
+						<= ACTUATOR_POSITION_OFFSET) {
+			// Увеличиваем счетчик повторений позиции
+			finger->countEqualsCurrentAndRequiredActuatorPosition++;
+
+			// Если счетчик повторов превысил максимальне значение, то считаем, что позиция установлена.
+			if (MAX_COUNT_EQUALS_POSITION
+					== finger->countEqualsCurrentAndRequiredActuatorPosition) {
+				ActuatorController_Stop(&finger->actuatorInfo);
+				finger->status = FINGER_SET;
+				break;
+			}
+		} else {
+			// Сбрасываем счетчик повторов
+			finger->countEqualsCurrentAndRequiredActuatorPosition = 0;
+		}
+
+		// Начинаем движение мотора в требуемую сторону.
+		if (finger->requiredDirectionMotion == DIRECTION_BACKWARD) {
+			// Если привод еще не выполняет движение в нужном направление, то начинаем движение.
+			if (finger->actuatorInfo.currentDirection != DIRECTION_BACKWARD) {
+				ActuatorController_MoveBackward(&finger->actuatorInfo);
+			}
+		} else if (finger->requiredDirectionMotion == DIRECTION_FORWARD) {
+			// Если привод еще не выполняет движение в нужном направление, то начинаем движение.
+			if (finger->actuatorInfo.currentDirection != DIRECTION_FORWARD) {
+				ActuatorController_MoveForward(&finger->actuatorInfo);
+			}
+		} else {
+			// Ошибка, недопустимое состояние.
+			ActuatorController_Stop(&finger->actuatorInfo);
+			finger->status = FINGER_ERROR;
+		}
+
+		break;
+	}
+	case FINGER_SET: {
+		if (abs(
+				finger->requiredActuatorPosition
+						< finger->actuatorPosition) >= ACTUATOR_POSITION_DESYNCHRONIZATION_OFFSET) {
+			finger->status = FINGER_REQUEST_SET_POSITION;
 		}
 		break;
-	case FINGER_DESYNCHRONIZATION:
-		finger->status = FINGER_SETING_POSITION;
-		break;
+	}
 	default:
 		break;
 	}

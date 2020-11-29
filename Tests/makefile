@@ -28,6 +28,7 @@ endif
 HEADER_ROOT=../Core/Inc
 SRC_ROOT=../Core/Src
 UNITY_ROOT=./unity
+FFF_ROOT=./fff
 TEST_ROOT=.
 DRIVERS_ROOT=../Drivers/STM32F1xx_HAL_Driver/Inc
 CMSIS_ROOT=../Drivers/CMSIS/Include
@@ -57,11 +58,14 @@ SRC_FILES1=\
   $(UNITY_ROOT)/src/unity.c \
   $(UNITY_ROOT)/extras/fixture/src/unity_fixture.c \
   $(SRC_ROOT)/hand_storage.c \
+  $(SRC_ROOT)/finger.c \
   $(SRC_ROOT)/position_to_feedback_converter.c -lm \
   $(TEST_ROOT)/TestPositionToFeedbackConverter.c \
+  $(TEST_ROOT)/TestFinger.c \
   $(TEST_ROOT)/test_runners/TestPositionToFeedbackConverter_Runner.c \
+  $(TEST_ROOT)/test_runners/TestFinger_Runner.c \
   $(TEST_ROOT)/test_runners/all_tests.c
-INC_DIRS=-Isrc -I$(UNITY_ROOT)/src -I$(HEADER_ROOT) -I$(DRIVERS_ROOT) -I$(ST_ROOT) -I$(CMSIS_ROOT) -I$(UNITY_ROOT)/extras/fixture/src
+INC_DIRS=-Isrc -I$(UNITY_ROOT)/src -I$(HEADER_ROOT) -I$(FFF_ROOT) -I$(DRIVERS_ROOT) -I$(ST_ROOT) -I$(CMSIS_ROOT) -I$(UNITY_ROOT)/extras/fixture/src
 SYMBOLS=-DUNITY_FIXTURE_NO_EXTRAS
 
 all: clean default

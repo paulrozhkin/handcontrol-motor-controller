@@ -8,8 +8,10 @@
 #ifndef INC_FINGER_H_
 #define INC_FINGER_H_
 
-/* Допустимый пределен смещения позиций в угловом соотношении. */
-#define POSITION_OFFSET 2
+/* Допустимый пределен смещения положения привода при установке. */
+#define ACTUATOR_POSITION_OFFSET 40
+/* Допустимый пределен смещения положения привода при установленном положении. */
+#define ACTUATOR_POSITION_DESYNCHRONIZATION_OFFSET 100
 /* Максимальное кол-во раз перед остановкой пальца, когда текущая и предыдущая позиция были равны,
  * но позиция не была установлена в требуемое значение. */
 #define MAX_COUNT_EQUALS_POSITION_EMERGENCY 50
@@ -32,7 +34,7 @@ enum FingerStateType {
 	/* Запрошена установка позиции. Установка еще не начата. */
 	FINGER_REQUEST_SET_POSITION,
 	/* Выполняется установка позиции. */
-	FINGER_SETING_POSITION,
+	FINGER_SETTING_POSITION,
 	/* Текущая позиция пальца не совпадает с требуемой больше, чем на допустимую погрешность. */
 	FINGER_DESYNCHRONIZATION,
 	/* Палец установил позицию и остановился. Позиция находится в допустимой погрешности. */
@@ -43,25 +45,22 @@ enum FingerStateType {
  * Хранит информацию о расчетах энкордера и физическом подключении протеза.
  */
 typedef struct {
-	/* Текущая позиция пальца. */
-	FingerPositionUnit position;
+	/* Текущее положение привода. */
+	FeedbackUnit actuatorPosition;
 
-	/* Предыдущая позиция пальца. */
-	FingerPositionUnit previousPosition;
+	/* Ожидаемая позиция привода. */
+	FeedbackUnit requiredActuatorPosition;
 
-	/* Кол-во раз, когда текущая и предыдущая позиция были одинаковыми */
-	int countEqualsCurrentAndPreviousPositions;
+	/* Кол-во раз, когда текущее и требуемое положение привода были одинаковыми */
+	int countEqualsCurrentAndRequiredActuatorPosition;
 
-	/* Кол-во раз, когда текущая и предыдущая позиция были одинаковыми, но позиция не была запрашиваемой */
-	int countEqualsCurrentAndPreviousPositionsEmergency;
+	/* Запрашиваемое направление движения при установке новой позиции. */
+	enum DirectionType requiredDirectionMotion;
 
 	/* Состояние пальца. */
 	enum FingerStateType status;
 
-	/* Ожидаемая позиция пальца. */
-	FingerPositionUnit requiredPosition;
-
-	ActuatorStruct actuator;
+	ActuatorStruct actuatorInfo;
 } FingerStruct;
 
 /**

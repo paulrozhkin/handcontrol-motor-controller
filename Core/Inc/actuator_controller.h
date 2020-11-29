@@ -11,10 +11,17 @@
 #include "feedback_reader.h"
 #include "gpio.h"
 
-typedef struct {
-	/* Текущее положение привода. */
-	FeedbackUnit feedback;
+/* Направление движения привода */
+enum DirectionType {
+	/* Направление отсутсвует */
+	DIRECTION_NONE,
+	/* Привод выдвигается */
+	DIRECTION_FORWARD,
+	/* Привод сжимается */
+	DIRECTION_BACKWARD
+};
 
+typedef struct {
 	/* Минимальное положение привода. */
 	FeedbackUnit backwardFeedbackLimit;
 
@@ -26,6 +33,9 @@ typedef struct {
 
 	/* Ридер для чтения обратной связи. */
 	FeedbackReaderStruct feedbackReader;
+
+	/* Текущее направление движения привода. */
+	enum DirectionType currentDirection;
 
 	/* Структура GPIO к которой подключен вывод привода для движения вперед
 	 (Движение вперед - при подаче логической единицы на этот пин привод будет
@@ -86,11 +96,11 @@ void ActuatorController_MoveBackward(ActuatorStruct *actuator);
 void ActuatorController_Stop(ActuatorStruct *actuator);
 
 /**
- * @brief  Выполняет получение обратной связи с привода и обновляет feedback.
+ * @brief  Выполняет получение обратной связи с привода.
  * @param actuator Привод.
  * @retval Feedback с привода.
  */
-FeedbackUnit ActuatorController_UpdateFeedback(ActuatorStruct *actuator);
+FeedbackUnit ActuatorController_GetFeedback(ActuatorStruct *actuator);
 
 /**
  * @brief Выполнить обновление ограничений обратной связи привода.
