@@ -13,7 +13,8 @@
 void ActuatorController_Init(ActuatorStruct *actuator,
 		FeedbackUnit feedbackMinimum, FeedbackUnit feedbackMaximum,
 		FeedbackReaderStruct feedbackReader, GPIO_TypeDef *motorForward,
-		uint16_t pinForward, GPIO_TypeDef *motorBackward, uint16_t pinBackward) {
+		uint16_t pinForward, GPIO_TypeDef *motorBackward, uint16_t pinBackward,
+		GPIO_TypeDef* gpioEnable, uint16_t pinEnable) {
 	memset(actuator, 0, sizeof(ActuatorStruct));
 
 	actuator->backwardFeedbackLimit = feedbackMinimum;
@@ -26,6 +27,12 @@ void ActuatorController_Init(ActuatorStruct *actuator,
 	actuator->pinForward = pinForward;
 	actuator->gpioBackward = motorBackward;
 	actuator->pinBackward = pinBackward;
+	actuator->gpioEnable = gpioEnable;
+	actuator->pinEnable = pinEnable;
+
+	// Сбрасываем питание привода.
+	HAL_GPIO_WritePin(actuator->gpioEnable, actuator->pinEnable, GPIO_PIN_RESET);
+	actuator->isEnabled = HAL_GPIO_ReadPin(actuator->gpioEnable, actuator->pinEnable);
 }
 
 FeedbackUnit ActuatorController_GetFeedback(ActuatorStruct *actuator) {
@@ -51,4 +58,14 @@ void ActuatorController_MoveForward(ActuatorStruct *actuator)
 	actuator->currentDirection = DIRECTION_FORWARD;
 	HAL_GPIO_WritePin(actuator->gpioBackward, actuator->pinBackward, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(actuator->gpioForward, actuator->pinForward, GPIO_PIN_SET);
+}
+
+void ActuatorController_Enable(ActuatorStruct *actuator)
+{
+	HAL_GPIO_WritePin(actuator->gpioEnable, actuator->pinEnable, GPIO_PIN_SET);
+}
+
+void ActuatorController_Disable(ActuatorStruct *actuator)
+{
+	HAL_GPIO_WritePin(actuator->gpioEnable, actuator->pinEnable, GPIO_PIN_RESET);
 }

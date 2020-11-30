@@ -9,6 +9,8 @@ FAKE_VALUE_FUNC(FeedbackUnit, ActuatorController_GetFeedback, ActuatorStruct *);
 FAKE_VOID_FUNC(ActuatorController_Stop, ActuatorStruct *);
 FAKE_VOID_FUNC(ActuatorController_MoveBackward, ActuatorStruct *);
 FAKE_VOID_FUNC(ActuatorController_MoveForward, ActuatorStruct *);
+FAKE_VOID_FUNC(ActuatorController_Enable, ActuatorStruct *);
+FAKE_VOID_FUNC(ActuatorController_Disable, ActuatorStruct *);
 
 FingerStruct create_finger_mock(void);
 
@@ -198,6 +200,55 @@ TEST(Finger, Finger_Given_SettingsPositionForward_When_UpdatesPosition_Then_Posi
 	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveForward_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(700, finger.actuatorPosition);
 	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
+}
+
+TEST(Finger, Finger_Given_SettingsPositionForwardWithinDesyncronizationLimit_When_UpdatesPosition_Then_PositionSetWithoutMovement) 
+{
+	// Given
+	FingerStruct finger = create_finger_mock();
+	finger.requiredActuatorPosition = 900;
+	finger.status = FINGER_REQUEST_SET_POSITION;
+	finger.actuatorInfo.currentDirection = DIRECTION_NONE;
+
+	// When
+	
+	// First call change state from FINGER_REQUEST_SET_POSITION to FINGER_SETTING_POSITION
+	ActuatorController_GetFeedback_fake.return_val = 860;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 870;
+	Finger_UpdatePosition(&finger);
+
+	if (ActuatorController_MoveForward_fake.call_count == 1) {
+		finger.actuatorInfo.currentDirection = DIRECTION_FORWARD;
+	}
+
+	ActuatorController_GetFeedback_fake.return_val = 870;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 879;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 880;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 876;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 860;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 870;
+	Finger_UpdatePosition(&finger);
+
+	// Then
+	TEST_ASSERT_EQUAL_INT(FINGER_SET, finger.status);
+	TEST_ASSERT_EQUAL_INT(8, ActuatorController_GetFeedback_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(0, ActuatorController_Stop_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveBackward_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveForward_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(870, finger.actuatorPosition);
+	TEST_ASSERT_EQUAL_INT(DIRECTION_NONE, finger.requiredDirectionMotion);
 }
 
 TEST(Finger, Finger_Given_SettingsPositionForwardInProgress_When_UpdatesPosition_Then_SettingsPositionState) 
@@ -403,6 +454,47 @@ TEST(Finger, Finger_Given_SettingsPositionBackward_When_UpdatePositionAndCurrent
 	TEST_ASSERT_EQUAL_INT(1090, finger.actuatorPosition);
 	TEST_ASSERT_EQUAL_INT(DIRECTION_BACKWARD, finger.requiredDirectionMotion);
 }
+
+TEST(Finger, Finger_Given_NewActuatorPosition_When_SetNewPosition_Then_SettingPositionState) 
+{
+	// Given
+	FingerStruct finger = create_finger_mock();
+	finger.status = FINGER_REQUIRED_EMPTY;
+	FeedbackUnit expectedPosition = 1500;
+
+	// When
+	Finger_SetNewPosition(&finger, expectedPosition);
+
+	// Then
+	TEST_ASSERT_EQUAL_INT(expectedPosition, finger.requiredActuatorPosition);
+	TEST_ASSERT_EQUAL_INT(FINGER_REQUEST_SET_POSITION, finger.status);
+}
+
+TEST(Finger, Finger_Given_NewAnglePosition_When_SetNewAnglePosition_Then_SettingPositionState) 
+{
+	// Given
+	FingerStruct finger = create_finger_mock();
+	finger.status = FINGER_REQUIRED_EMPTY;
+	FingerPositionUnit anglePosition = 135;
+	FeedbackUnit expectedPosition = 3100;
+
+	FingerStruct finger2 = create_finger_mock();
+	finger2.status = FINGER_REQUIRED_EMPTY;
+	FingerPositionUnit anglePosition2 = 222;
+	FeedbackUnit expectedPosition2 = finger2.actuatorInfo.backwardFeedbackLimit;
+
+	// When
+	Finger_SetNewAnglePosition(&finger, anglePosition);
+	Finger_SetNewAnglePosition(&finger2, anglePosition2);
+
+	// Then
+	TEST_ASSERT_EQUAL_INT(expectedPosition, finger.requiredActuatorPosition);
+	TEST_ASSERT_EQUAL_INT(FINGER_REQUEST_SET_POSITION, finger.status);
+
+	TEST_ASSERT_EQUAL_INT(expectedPosition2, finger2.requiredActuatorPosition);
+	TEST_ASSERT_EQUAL_INT(FINGER_REQUEST_SET_POSITION, finger2.status);
+}
+
 
 FingerStruct create_finger_mock(void) 
 {

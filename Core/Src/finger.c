@@ -35,6 +35,15 @@ void Finger_UpdatePosition(FingerStruct *finger) {
 				&& finger->requiredActuatorPosition
 						<= finger->actuatorInfo.backwardFeedbackLimit) {
 
+			// Если мы находимся в пределах половины смещения дессинхронизации (~2.5 градуса), то двигаться не надо,
+			// т.к. мы не может установить подобную точность.
+			if (abs(
+					finger->requiredActuatorPosition
+							- finger->actuatorPosition) <= (ACTUATOR_POSITION_DESYNCHRONIZATION_OFFSET / 2)) {
+				finger->status = FINGER_SET;
+				break;
+			}
+
 			// Устанвливаем направление движения
 			if (finger->requiredActuatorPosition >= finger->actuatorPosition) {
 				finger->requiredDirectionMotion = DIRECTION_BACKWARD;
@@ -112,12 +121,68 @@ void Finger_UpdatePosition(FingerStruct *finger) {
 	case FINGER_SET: {
 		if (abs(
 				finger->requiredActuatorPosition
-						< finger->actuatorPosition) >= ACTUATOR_POSITION_DESYNCHRONIZATION_OFFSET) {
-			finger->status = FINGER_REQUEST_SET_POSITION;
+						- finger->actuatorPosition) >= ACTUATOR_POSITION_DESYNCHRONIZATION_OFFSET) {
+			finger->status = FINGER_DESYNCHRONIZATION;
 		}
 		break;
 	}
 	default:
 		break;
 	}
+}
+
+void Finger_SetNewAnglePosition(FingerStruct *finger,
+		FingerPositionUnit newAnglePosition) {
+	FeedbackUnit newPosition = PositionToFeedbackConverter_Convert(
+			newAnglePosition, finger->actuatorInfo.backwardFeedbackLimit,
+			finger->actuatorInfo.forwardFeedbackLimit,
+			finger->actuatorInfo.feedbackUnitPerAngle);
+
+	Finger_SetNewPosition(finger, newPosition);
+}
+
+void Finger_SetNewPosition(FingerStruct *finger,
+		FeedbackUnit newActuatorPosition) {
+	if (finger->status == FINGER_ERROR) {
+		return;
+	}
+
+	if (finger->status == FINGER_SETTING_POSITION) {
+		finger->requiredDirectionMotion = DIRECTION_NONE;
+		ActuatorController_Stop(&finger->actuatorInfo);
+	}
+
+	finger->requiredActuatorPosition = newActuatorPosition;
+	finger->status = FINGER_REQUEST_SET_POSITION;
+}
+
+void Finger_SetPosition(FingerStruct *finger) {
+	Finger_SetNewPosition(finger, finger->requiredActuatorPosition);
+}
+
+FingerPositionUnit Finger_GetAnglePosition(FingerStruct *finger) {
+	if (finger->status == FINGER_ERROR) {
+		return 0;
+	}
+
+	return PositionToFeedbackConverter_ConvertBack(finger->actuatorPosition,
+			finger->actuatorInfo.backwardFeedbackLimit,
+			finger->actuatorInfo.forwardFeedbackLimit,
+			finger->actuatorInfo.feedbackUnitPerAngle);
+}
+
+void Finger_Stop(FingerStruct *finger) {
+	ActuatorController_Stop(&finger->actuatorInfo);
+
+	if (finger->status != FINGER_ERROR) {
+		finger->status = FINGER_REQUIRED_EMPTY;
+	}
+}
+
+void Finger_Enable(FingerStruct *finger) {
+	ActuatorController_Enable(&finger->actuatorInfo);
+}
+
+void Finger_Disable(FingerStruct *finger) {
+	ActuatorController_Disable(&finger->actuatorInfo);
 }

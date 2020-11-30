@@ -10,6 +10,7 @@
 
 #include "feedback_reader.h"
 #include "gpio.h"
+#include "stdbool.h"
 
 /* Направление движения привода */
 enum DirectionType {
@@ -52,6 +53,15 @@ typedef struct {
 
 	/* Номер пина к которому подключен вывод привода для движения назад. */
 	uint16_t pinBackward;
+
+	/* Структура GPIO к которой подключен вывод подачи питания на привод. */
+	GPIO_TypeDef *gpioEnable;
+
+	/* Номер пина к которому подключен вывод подачи питания на привод. */
+	uint16_t pinEnable;
+
+	/* Флаг питания на приводе. */
+	bool isEnabled;
 } ActuatorStruct;
 
 /**
@@ -67,12 +77,15 @@ typedef struct {
  * @param motorBackward Структура GPIO к которой подключен вывод мотора для движения назад.
  *       (Движение назад - при подаче логической единицы на этот пин мотор будет сжимать палец).
  * @param pinBackward Номер пина к которому подключен вывод мотора для движения вперед.
+ * @param gpioEnable Структура GPIO к которой подключен вывод подачи питания на привод.
+ * @param pinEnable Номер пина к которому подключен вывод подачи питания на привод.
  * @retval None.
  */
 void ActuatorController_Init(ActuatorStruct *actuator,
 		FeedbackUnit backwardFeedbackLimit, FeedbackUnit forwardFeedbackLimit,
 		FeedbackReaderStruct feedbackReader, GPIO_TypeDef *motorForward,
-		uint16_t pinForward, GPIO_TypeDef *motorBackward, uint16_t pinBackward);
+		uint16_t pinForward, GPIO_TypeDef *motorBackward, uint16_t pinBackward,
+		GPIO_TypeDef* gpioEnable, uint16_t pinEnable);
 
 /**
  * @brief  Движение привода вперед (привод выдвигается).
@@ -111,5 +124,19 @@ FeedbackUnit ActuatorController_GetFeedback(ActuatorStruct *actuator);
  */
 void ActuatorController_UpdateFeedbackLimits(ActuatorStruct *actuator,
 		FeedbackUnit backwardFeedbackLimit, FeedbackUnit forwardFeedbackLimit);
+
+/**
+ * @brieft Включить питание привода.
+ * @param actuator Привод.
+ * @retval None.
+ */
+void ActuatorController_Enable(ActuatorStruct *actuator);
+
+/**
+ * @brief Отключить питание привода.
+ * @param actuator Привод.
+ * @retval None.
+ */
+void ActuatorController_Disable(ActuatorStruct *actuator);
 
 #endif /* INC_ACTUATOR_CONTROLLER_H_ */

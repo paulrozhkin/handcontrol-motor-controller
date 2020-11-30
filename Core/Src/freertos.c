@@ -30,6 +30,7 @@
 #include "stdbool.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "stdint.h"
 
 #include "adc.h"
 #include "dma.h"
@@ -38,6 +39,7 @@
 #include "gpio.h"
 
 #include "queue.h"
+#include "semphr.h"
 
 #include "crc8.h"
 #include "hand_controller.h"
@@ -87,14 +89,14 @@ typedef struct {
 
 /* Телеметрия. */
 typedef struct {
-	//enum TypeWork CurrentRegime;
-	uint8_t PointerFinger;
-	uint8_t MiddleFinger;
-	uint8_t RingFinger;
-	uint8_t LittleFinger;
-	uint8_t ThumbFinger;
-	uint8_t ThumbEjector;
-} TelemetryStruct;
+	enum HandStateType state;
+	uint8_t littleFingerAnglePosition;
+	uint8_t ringFingerAnglePosition;
+	uint8_t middleFingerAnglePosition;
+	uint8_t indexFingerAnglePosition;
+	uint8_t thumbFingerAnglePosition;
+	uint8_t thumbEjectorAnglePosition;
+} ProtocolTelemetryStruct;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -113,6 +115,14 @@ typedef struct {
 /* Основная конфигурация протеза для осуществления движений.
  * На ее основе работает вся прошивка МК. */
 static HandStruct handConfig;
+
+/* Очередь для установки новых положений протеза */
+static QueueHandle_t newAnglePositionsQueue;
+
+static SemaphoreHandle_t telemetrySemaphore;
+
+/* Текущая телеметрия */
+static ProtocolTelemetryStruct currentTelemetry;
 
 /* ADC PV Variables */
 volatile uint16_t ADC_Data[6];
@@ -140,7 +150,9 @@ osThreadId mainTaskHandle;
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
-ProtocolStruct Handle_Telemetry_Command();
+ProtocolStruct Protocol_Handle_Telemetry_Command();
+
+ProtocolTelemetryStruct Protocol_Get_Telemetry();
 
 /**
  * @brief Выполняет инициализацию буферов SPI и начинает прием.
@@ -228,6 +240,12 @@ void MX_FREERTOS_Init(void) {
 
 	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
+	telemetrySemaphore = xSemaphoreCreateMutex();
+	if (telemetrySemaphore == NULL) {
+		HandController_Error(&handConfig);
+	}
+
+	xSemaphoreGive(telemetrySemaphore);
 	/* USER CODE END RTOS_SEMAPHORES */
 
 	/* USER CODE BEGIN RTOS_TIMERS */
@@ -238,6 +256,7 @@ void MX_FREERTOS_Init(void) {
 	/* add queues, ... */
 
 	spiReceiveQueue = xQueueCreate(1, sizeof(ProtocolStruct));
+	newAnglePositionsQueue = xQueueCreate(10, sizeof(FingerPositionUnit));
 
 	/* USER CODE END RTOS_QUEUES */
 
@@ -264,7 +283,40 @@ void StartDefaultTask(void const *argument) {
 
 	/* Infinite loop */
 	for (;;) {
+		if (uxQueueMessagesWaiting(newAnglePositionsQueue) != 0) {
+			HandAnglePositionsStruct newPositions;
+			if (xQueueReceive(newAnglePositionsQueue, &newPositions,
+					0) == pdTRUE) {
+				HandController_SetAnglePositions(&handConfig, newPositions);
+			}
+		}
+
 		HandController_UpdateFingers(&handConfig);
+		HandController_UpdateState(&handConfig);
+
+		// Обновляем текущую телеметрию устройства.
+		HandAnglePositionsStruct anglePositions =
+				HandController_GetAnglePositions(&handConfig);
+
+		if (xSemaphoreTake(telemetrySemaphore, pdMS_TO_TICKS(1)) == pdTRUE) {
+			currentTelemetry.state = handConfig.state;
+			currentTelemetry.littleFingerAnglePosition =
+					anglePositions.littleFingerAnglePosition;
+			currentTelemetry.ringFingerAnglePosition =
+					anglePositions.ringFingerAnglePosition;
+			currentTelemetry.middleFingerAnglePosition =
+					anglePositions.middleFingerAnglePosition;
+			currentTelemetry.indexFingerAnglePosition =
+					anglePositions.indexFingerAnglePosition;
+			currentTelemetry.thumbFingerAnglePosition =
+					anglePositions.thumbFingerAnglePosition;
+			currentTelemetry.thumbEjectorAnglePosition =
+					anglePositions.thumbEjectorAnglePosition;
+			xSemaphoreGive(telemetrySemaphore);
+		} else {
+			HandController_Error(&handConfig);
+		}
+
 		osDelay(1);
 	}
 	/* USER CODE END StartDefaultTask */
@@ -278,16 +330,24 @@ void ProtocolParser() {
 	xQueueReceive(spiReceiveQueue, &receiveData, portMAX_DELAY);
 	switch (receiveData.Command) {
 	case Telemetry: {
-		ProtocolStruct responseTelemetry = Handle_Telemetry_Command();
-		memcpy(&responseSpi, &responseTelemetry, sizeof(ProtocolStruct));
-		//responseSpi.CurrentRegime = test;
-		HAL_SPI_TransmitReceive_IT(&hspi2, (uint8_t*) &responseSpi, trashBuffer,
-				sizeof(ProtocolStruct));
+		// Телеметрия отправляется в любом случае.
 		break;
 	}
-	case SetPositions:
-		break;
+	case SetPositions: {
+		HandAnglePositionsStruct newPositions;
+		newPositions.littleFingerAnglePosition = receiveData.data[0];
+		newPositions.ringFingerAnglePosition = receiveData.data[1];
+		newPositions.middleFingerAnglePosition = receiveData.data[2];
+		newPositions.indexFingerAnglePosition = receiveData.data[3];
+		newPositions.thumbFingerAnglePosition = receiveData.data[4];
+		newPositions.thumbEjectorAnglePosition = receiveData.data[5];
 
+		if (xQueueSend(newAnglePositionsQueue, (void* )&newPositions,
+				NULL) != pdPASS) {
+			HandController_Error(&handConfig);
+		}
+		break;
+	}
 	case CalibrationSettingsSave:
 		break;
 
@@ -306,6 +366,12 @@ void ProtocolParser() {
 	default:
 		break;
 	}
+
+	ProtocolStruct responseTelemetry = Protocol_Handle_Telemetry_Command();
+	memcpy(&responseSpi, &responseTelemetry, sizeof(ProtocolStruct));
+	//responseSpi.CurrentRegime = test;
+	HAL_SPI_TransmitReceive_IT(&hspi2, (uint8_t*) &responseSpi, trashBuffer,
+			sizeof(ProtocolStruct));
 }
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
@@ -336,26 +402,29 @@ void Init_Spi() {
 			sizeof(ProtocolStruct));
 }
 
-ProtocolStruct Handle_Telemetry_Command() {
+ProtocolStruct Protocol_Handle_Telemetry_Command() {
 	ProtocolStruct responseData;
 	memset(&responseData, 0, sizeof(ProtocolStruct));
 	responseData.Command = Telemetry;
-//	responseData.CurrentRegime = handConfig.CurrentRegime;
-//	responseData.data[0] = handConfig.PointerFinger.position;
-//	responseData.data[1] = handConfig.MiddleFinger.position;
-//	responseData.data[2] = handConfig.RingFinger.position;
-//	responseData.data[3] = handConfig.LittleFinger.position;
-//	responseData.data[4] = handConfig.ThumbFinger.position;
-//	responseData.data[5] = handConfig.ThumbEjector.position;
-//	responseData.CRC8 = calculate_crc8((unsigned char*) &responseData,
-//			sizeof(ProtocolStruct) - 1);
+
+	ProtocolTelemetryStruct telemetry = Protocol_Get_Telemetry();
+	memcpy(((uint8_t*) &responseData) + 1, &telemetry, sizeof(ProtocolStruct));
+	responseData.CRC8 = calculate_crc8((unsigned char*) &responseData,
+			sizeof(ProtocolStruct) - 1);
 
 	return responseData;
 }
 
-TelemetryStruct Get_Telemetry() {
-	TelemetryStruct telemetry;
-	//telemetry.CurrentRegime = handConfig.CurrentRegime;
+ProtocolTelemetryStruct Protocol_Get_Telemetry() {
+	ProtocolTelemetryStruct telemetry;
+
+	if (xSemaphoreTake(telemetrySemaphore, pdMS_TO_TICKS(1)) == pdTRUE) {
+		memcpy(&telemetry, &currentTelemetry, sizeof(ProtocolTelemetryStruct));
+	} else {
+		HandController_Error(&handConfig);
+		telemetry.state = HAND_STATE_ERROR;
+	}
+
 	return telemetry;
 }
 

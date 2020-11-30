@@ -80,12 +80,12 @@ void Finger_Init(FingerStruct *finger, ActuatorStruct actuator);
 void Finger_UpdatePosition(FingerStruct *finger);
 
 /**
- *	@brief Запросить установку новой позиции. Установка новой позиции начнется при вызове UpdatePosition.
+ *	@brief Запросить установку новой позиции в угловом соотношении. Установка новой позиции начнется при вызове UpdatePosition.
  *	@param finger FingerStruct.
- *	@param newPosition
+ *	@param newAnglePosition позиция в угловом соотношении.
  *	@retval None.
  */
-void Finger_SetNewPosition(FingerStruct *finger, FingerPositionUnit newPosition);
+void Finger_SetNewAnglePosition(FingerStruct *finger, FingerPositionUnit newAnglePosition);
 
 /**
  * @brief Запросить установку requiredPosition. Установка позиции начнется при вызове UpdatePosition.
@@ -94,6 +94,14 @@ void Finger_SetNewPosition(FingerStruct *finger, FingerPositionUnit newPosition)
  * @retval None.
  */
 void Finger_SetPosition(FingerStruct *finger);
+
+/**
+ *	@brief Запросить установку новой позиции привода. Установка новой позиции начнется при вызове UpdatePosition.
+ *	@param finger FingerStruct.
+ *	@param newAnglePosition позиция привода.
+ *	@retval None.
+ */
+void Finger_SetNewPosition(FingerStruct *finger, FeedbackUnit newActuatorPosition);
 
 /*
  * @brief Выполнить принудительную остановку пальца. requiredPosition будет сброшена.
@@ -105,10 +113,22 @@ void Finger_Stop(FingerStruct *finger);
 /**
  * @brieft Расчитать позицию пальца в угловом соотношение исходя из обратной связи привода.
  * @param finger FingerStruct.
- * @param feedback текущая обратная связь.
  * @retval Позиция в угловом соотношении.
  */
-FingerPositionUnit Finger_GetPositionFromFeedback(FingerStruct *finger,
-		FeedbackUnit feedback);
+FingerPositionUnit Finger_GetAnglePosition(FingerStruct *finger);
+
+/**
+ * @brieft Включить привод, который отвечает за палец.
+ * @param finger FingerStruct.
+ * @retval None.
+ */
+void Finger_Enable(FingerStruct *finger);
+
+/**
+ * @brief Отключить привод, который отвечает за палец.
+ * @param finger FingerStruct.
+ * @retval None.
+ */
+void Finger_Disable(FingerStruct *finger);
 
 #endif /* INC_FINGER_H_ */

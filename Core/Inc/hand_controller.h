@@ -13,29 +13,29 @@
 #include "finger.h"
 
 /* Текущее состояние работы драйвера линейных двигателей. */
-enum TypeWork {
+enum HandStateType {
 	/* Режим инициализации драйвера. */
-	InitializationMode,
+	HAND_STATE_INITIALIZATION,
 
 	/* В данном режиме происходит автоматический расчет минимальных и максимальных положений кисти и пальцев протеза. */
-	AutoCalibrationMode,
+	HAND_STATE_AUTO_CALIBRATION,
 
 	/* В данном режиме происходит ручная установка минимальных и максимальных положений кисти и пальцев протеза. */
-	ManualCalibrationMode,
+	HAND_STATE_MANUAL_CALIBRATION,
 
 	/* Режим ожидания. Механические действия не исполняются. */
-	SleepMode,
+	HAND_STATE_SLEEP,
 
 	/* Режим установки новых положений. */
-	SettingPositionMode,
+	HAND_STATE_SETTING_POSITIONS,
 
 	/* Режим ошибки. Работа невозможна. */
-	ErrorMode
+	HAND_STATE_ERROR
 };
 
 /* Позиции всех движущихся частей протеза.*/
 typedef struct {
-	enum TypeWork currentMode;
+	enum HandStateType state;
 	FingerStruct littleFinger;
 	FingerStruct ringFinger;
 	FingerStruct middleFinger;
@@ -43,6 +43,15 @@ typedef struct {
 	FingerStruct thumbFinger;
 	FingerStruct thumbEjector;
 } HandStruct;
+
+typedef struct {
+	FingerPositionUnit littleFingerAnglePosition;
+	FingerPositionUnit ringFingerAnglePosition;
+	FingerPositionUnit middleFingerAnglePosition;
+	FingerPositionUnit indexFingerAnglePosition;
+	FingerPositionUnit thumbFingerAnglePosition;
+	FingerPositionUnit thumbEjectorAnglePosition;
+} HandAnglePositionsStruct;
 
 /**
  * @brief Выполнить инициализацию конфигурации протеза.
@@ -56,9 +65,11 @@ typedef struct {
  * @retval None.
  */
 void HandController_Init(HandStruct *hand,
-		FeedbackReaderStruct littleFingerReader, FeedbackReaderStruct ringFingerReader,
-		FeedbackReaderStruct middleFingerReader, FeedbackReaderStruct indexFinger,
-		FeedbackReaderStruct thumbFinger, FeedbackReaderStruct thumbEjector);
+		FeedbackReaderStruct littleFingerReader,
+		FeedbackReaderStruct ringFingerReader,
+		FeedbackReaderStruct middleFingerReader,
+		FeedbackReaderStruct indexFinger, FeedbackReaderStruct thumbFinger,
+		FeedbackReaderStruct thumbEjector);
 
 /**
  *	@brief Выполняет обновление текущих позиций для каждого пальца.
@@ -66,6 +77,50 @@ void HandController_Init(HandStruct *hand,
  *	@param handStruct HandStruct.
  *	@retval None.
  */
-void HandController_UpdateFingers(HandStruct *handStruct);
+void HandController_UpdateFingers(HandStruct *hand);
+
+/**
+ *	@brief Выполняет обновление состояний протеза.
+ *	@param hand HandStruct.
+ *	@retval None.
+ */
+void HandController_UpdateState(HandStruct *hand);
+
+/**
+ * @brief Установить позиции протеза.
+ * @param hand HandStruct.
+ * @param newPositions позиции для установки.
+ * @retval None.
+ */
+void HandController_SetAnglePositions(HandStruct *hand,
+		HandAnglePositionsStruct newPositions);
+
+/**
+ * @brief Получить позиции протеза.
+ * @param hand HandStruct.
+ * @retval Текущии позиции протеза.
+ */
+HandAnglePositionsStruct HandController_GetAnglePositions(HandStruct *hand);
+
+/**
+ * @brief Включает питание всех пальцев (приводов).
+ * @param hand HandStruct.
+ * @retval None.
+ */
+void HandController_EnableFingers(HandStruct *hand);
+
+/**
+ * @brief Отключает питание всех пальцев (приводов).
+ * @param hand HandStruct.
+ * @retval None.
+ */
+void HandController_DisableFingers(HandStruct *hand);
+
+/**
+ * @brief установить ошибку протеза.
+ * @hand HandStruct.
+ * @retval None.
+ */
+void HandController_Error(HandStruct *hand);
 
 #endif /* INC_HAND_CONTROLLER_H_ */
