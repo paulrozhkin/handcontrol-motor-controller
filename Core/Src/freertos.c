@@ -146,6 +146,7 @@ static QueueHandle_t spiReceiveQueue;
 
 /* USER CODE END Variables */
 osThreadId mainTaskHandle;
+osThreadId protocolTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -153,6 +154,8 @@ osThreadId mainTaskHandle;
 ProtocolStruct Protocol_Handle_Telemetry_Command();
 
 ProtocolTelemetryStruct Protocol_Get_Telemetry();
+
+void ProtocolParser();
 
 /**
  * @brief Выполняет инициализацию буферов SPI и начинает прием.
@@ -162,17 +165,14 @@ void Init_Spi();
 
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void const *argument);
+void StartHandControllerTask(void const *argument);
+void StartProtocolTask(void const *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
 void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer,
 		StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize);
-
-/* GetTimerTaskMemory prototype (linked to static allocation support) */
-void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
-		StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize);
 
 /* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
 static StaticTask_t xIdleTaskTCBBuffer;
@@ -187,19 +187,6 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer,
 }
 /* USER CODE END GET_IDLE_TASK_MEMORY */
 
-/* USER CODE BEGIN GET_TIMER_TASK_MEMORY */
-static StaticTask_t xTimerTaskTCBBuffer;
-static StackType_t xTimerStack[configTIMER_TASK_STACK_DEPTH];
-
-void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
-		StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize) {
-	*ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
-	*ppxTimerTaskStackBuffer = &xTimerStack[0];
-	*pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
-	/* place for user code */
-}
-/* USER CODE END GET_TIMER_TASK_MEMORY */
-
 /**
  * @brief  FreeRTOS initialization
  * @param  None
@@ -208,6 +195,7 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
 void MX_FREERTOS_Init(void) {
 	/* USER CODE BEGIN Init */
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &ADC_Data, 6);
+	Init_Spi();
 
 	FeedbackReaderStruct littleFingerReader;
 	FeedbackReader_Init(&littleFingerReader, (uint16_t*) &ADC_Data[5]);
@@ -231,7 +219,6 @@ void MX_FREERTOS_Init(void) {
 			middleFingerReader, indexFingerReader, thumbFingerReader,
 			thumbEjectorFingerReader);
 
-	//Init_Spi();
 	/* USER CODE END Init */
 
 	/* USER CODE BEGIN RTOS_MUTEX */
@@ -262,8 +249,12 @@ void MX_FREERTOS_Init(void) {
 
 	/* Create the thread(s) */
 	/* definition and creation of mainTask */
-	osThreadDef(mainTask, StartDefaultTask, osPriorityNormal, 0, 256);
+	osThreadDef(mainTask, StartHandControllerTask, osPriorityNormal, 0, 256);
 	mainTaskHandle = osThreadCreate(osThread(mainTask), NULL);
+
+	/* definition and creation of protocolTask */
+	osThreadDef(protocolTask, StartProtocolTask, osPriorityRealtime, 0, 256);
+	protocolTaskHandle = osThreadCreate(osThread(protocolTask), NULL);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -271,17 +262,20 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_StartHandControllerTask */
 /**
  * @brief  Function implementing the mainTask thread.
  * @param  argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const *argument) {
-	/* USER CODE BEGIN StartDefaultTask */
-
+/* USER CODE END Header_StartHandControllerTask */
+void StartHandControllerTask(void const *argument) {
+	/* USER CODE BEGIN StartHandControllerTask */
 	/* Infinite loop */
+
+	// Initialise the xLastWakeTime variable with the current time.
+	TickType_t xLastWakeTime = xTaskGetTickCount();
+
 	for (;;) {
 		if (uxQueueMessagesWaiting(newAnglePositionsQueue) != 0) {
 			HandAnglePositionsStruct newPositions;
@@ -317,9 +311,25 @@ void StartDefaultTask(void const *argument) {
 			HandController_Error(&handConfig);
 		}
 
-		osDelay(1);
+		vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(1));
 	}
-	/* USER CODE END StartDefaultTask */
+	/* USER CODE END StartHandControllerTask */
+}
+
+/* USER CODE BEGIN Header_StartProtocolTask */
+/**
+ * @brief Function implementing the protocolTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartProtocolTask */
+void StartProtocolTask(void const *argument) {
+	/* USER CODE BEGIN StartProtocolTask */
+	/* Infinite loop */
+	for (;;) {
+		ProtocolParser();
+	}
+	/* USER CODE END StartProtocolTask */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -328,6 +338,13 @@ void StartDefaultTask(void const *argument) {
 void ProtocolParser() {
 	ProtocolStruct receiveData;
 	xQueueReceive(spiReceiveQueue, &receiveData, portMAX_DELAY);
+
+	ProtocolStruct responseTelemetry = Protocol_Handle_Telemetry_Command();
+	memcpy(&responseSpi, &responseTelemetry, sizeof(ProtocolStruct));
+	//responseSpi.CurrentRegime = test;
+	HAL_SPI_TransmitReceive_IT(&hspi2, (uint8_t*) &responseSpi, trashBuffer,
+			sizeof(ProtocolStruct));
+
 	switch (receiveData.Command) {
 	case Telemetry: {
 		// Телеметрия отправляется в любом случае.
@@ -343,7 +360,7 @@ void ProtocolParser() {
 		newPositions.thumbEjectorAnglePosition = receiveData.data[5];
 
 		if (xQueueSend(newAnglePositionsQueue, (void* )&newPositions,
-				NULL) != pdPASS) {
+				pdMS_TO_TICKS(1)) != pdPASS) {
 			HandController_Error(&handConfig);
 		}
 		break;
@@ -366,12 +383,6 @@ void ProtocolParser() {
 	default:
 		break;
 	}
-
-	ProtocolStruct responseTelemetry = Protocol_Handle_Telemetry_Command();
-	memcpy(&responseSpi, &responseTelemetry, sizeof(ProtocolStruct));
-	//responseSpi.CurrentRegime = test;
-	HAL_SPI_TransmitReceive_IT(&hspi2, (uint8_t*) &responseSpi, trashBuffer,
-			sizeof(ProtocolStruct));
 }
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
@@ -408,7 +419,8 @@ ProtocolStruct Protocol_Handle_Telemetry_Command() {
 	responseData.Command = Telemetry;
 
 	ProtocolTelemetryStruct telemetry = Protocol_Get_Telemetry();
-	memcpy(((uint8_t*) &responseData) + 1, &telemetry, sizeof(ProtocolStruct));
+	memcpy(((uint8_t*) &responseData) + 1, (uint8_t*) &telemetry,
+			sizeof(ProtocolTelemetryStruct));
 	responseData.CRC8 = calculate_crc8((unsigned char*) &responseData,
 			sizeof(ProtocolStruct) - 1);
 
@@ -420,6 +432,7 @@ ProtocolTelemetryStruct Protocol_Get_Telemetry() {
 
 	if (xSemaphoreTake(telemetrySemaphore, pdMS_TO_TICKS(1)) == pdTRUE) {
 		memcpy(&telemetry, &currentTelemetry, sizeof(ProtocolTelemetryStruct));
+		xSemaphoreGive(telemetrySemaphore);
 	} else {
 		HandController_Error(&handConfig);
 		telemetry.state = HAND_STATE_ERROR;
