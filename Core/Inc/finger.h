@@ -85,7 +85,8 @@ void Finger_UpdatePosition(FingerStruct *finger);
  *	@param newAnglePosition позиция в угловом соотношении.
  *	@retval None.
  */
-void Finger_SetNewAnglePosition(FingerStruct *finger, FingerPositionUnit newAnglePosition);
+void Finger_SetNewAnglePosition(FingerStruct *finger,
+		FingerPositionUnit newAnglePosition);
 
 /**
  * @brief Запросить установку requiredPosition. Установка позиции начнется при вызове UpdatePosition.
@@ -101,7 +102,8 @@ void Finger_SetPosition(FingerStruct *finger);
  *	@param newAnglePosition позиция привода.
  *	@retval None.
  */
-void Finger_SetNewPosition(FingerStruct *finger, FeedbackUnit newActuatorPosition);
+void Finger_SetNewPosition(FingerStruct *finger,
+		FeedbackUnit newActuatorPosition);
 
 /*
  * @brief Выполнить принудительную остановку пальца. requiredPosition будет сброшена.

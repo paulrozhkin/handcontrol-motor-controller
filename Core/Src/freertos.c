@@ -243,7 +243,7 @@ void MX_FREERTOS_Init(void) {
 	/* add queues, ... */
 
 	spiReceiveQueue = xQueueCreate(1, sizeof(ProtocolStruct));
-	newAnglePositionsQueue = xQueueCreate(10, sizeof(FingerPositionUnit));
+	newAnglePositionsQueue = xQueueCreate(10, sizeof(HandAnglePositionsStruct));
 
 	/* USER CODE END RTOS_QUEUES */
 

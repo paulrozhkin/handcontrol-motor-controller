@@ -37,18 +37,17 @@ void Finger_UpdatePosition(FingerStruct *finger) {
 
 			// Если мы находимся в пределах половины смещения дессинхронизации (~2.5 градуса), то двигаться не надо,
 			// т.к. мы не может установить подобную точность.
-			if (abs(
-					finger->requiredActuatorPosition
-							- finger->actuatorPosition) <= (ACTUATOR_POSITION_DESYNCHRONIZATION_OFFSET / 2)) {
+			if (abs(finger->requiredActuatorPosition - finger->actuatorPosition)
+					<= (ACTUATOR_POSITION_DESYNCHRONIZATION_OFFSET / 2)) {
 				finger->status = FINGER_SET;
 				break;
 			}
 
 			// Устанвливаем направление движения
 			if (finger->requiredActuatorPosition >= finger->actuatorPosition) {
-				finger->requiredDirectionMotion = DIRECTION_BACKWARD;
-			} else {
 				finger->requiredDirectionMotion = DIRECTION_FORWARD;
+			} else {
+				finger->requiredDirectionMotion = DIRECTION_BACKWARD;
 			}
 
 			finger->countEqualsCurrentAndRequiredActuatorPosition = 0;
@@ -63,17 +62,17 @@ void Finger_UpdatePosition(FingerStruct *finger) {
 	case FINGER_SETTING_POSITION: {
 		bool beyondRequiredPosition = false;
 
-		// Если мы вышли за запрашиваемую позицию при сжатии
+		// Если мы вышли за запрашиваемую позицию при разжатии
 		if (finger->requiredDirectionMotion == DIRECTION_BACKWARD
 				&& finger->requiredActuatorPosition
-						< finger->actuatorPosition) {
+						> finger->actuatorPosition) {
 			beyondRequiredPosition = true;
 		}
 
-		// Если мы вышли за запрашиваемую позицию при разжатии
+		// Если мы вышли за запрашиваемую позицию при сжатии
 		if (finger->requiredDirectionMotion == DIRECTION_FORWARD
 				&& finger->requiredActuatorPosition
-						> finger->actuatorPosition) {
+						< finger->actuatorPosition) {
 			beyondRequiredPosition = true;
 		}
 

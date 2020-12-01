@@ -74,7 +74,7 @@ TEST(Finger, Finger_Given_RequestSetPositionStateWithBackwardDirection_When_Upda
 	// Then
 	TEST_ASSERT_EQUAL_INT(defaultPosition, finger.actuatorPosition);
 	TEST_ASSERT_EQUAL_INT(FINGER_SETTING_POSITION, finger.status);
-	TEST_ASSERT_EQUAL_INT(DIRECTION_BACKWARD, finger.requiredDirectionMotion);
+	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
 }
 
 TEST(Finger, Finger_Given_RequestSetPositionStateWithForwardDirection_When_UpdatePosition_Then_RequiredDirectionMotionCorrect) 
@@ -93,7 +93,7 @@ TEST(Finger, Finger_Given_RequestSetPositionStateWithForwardDirection_When_Updat
 	// Then
 	TEST_ASSERT_EQUAL_INT(defaultPosition, finger.actuatorPosition);
 	TEST_ASSERT_EQUAL_INT(FINGER_SETTING_POSITION, finger.status);
-	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
+	TEST_ASSERT_EQUAL_INT(DIRECTION_BACKWARD, finger.requiredDirectionMotion);
 }
 
 TEST(Finger, Finger_Given_SettingsPositionBackward_When_UpdatesPosition_Then_PositionSet) 
@@ -113,8 +113,8 @@ TEST(Finger, Finger_Given_SettingsPositionBackward_When_UpdatesPosition_Then_Pos
 	ActuatorController_GetFeedback_fake.return_val = 920;
 	Finger_UpdatePosition(&finger);
 
-	if (ActuatorController_MoveBackward_fake.call_count == 1) {
-		finger.actuatorInfo.currentDirection = DIRECTION_BACKWARD;
+	if (ActuatorController_MoveForward_fake.call_count == 1) {
+		finger.actuatorInfo.currentDirection = DIRECTION_FORWARD;
 	}
 
 	ActuatorController_GetFeedback_fake.return_val = 940;
@@ -143,10 +143,10 @@ TEST(Finger, Finger_Given_SettingsPositionBackward_When_UpdatesPosition_Then_Pos
 	TEST_ASSERT_EQUAL_INT(FINGER_SET, finger.status);
 	TEST_ASSERT_EQUAL_INT(8, ActuatorController_GetFeedback_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(1, ActuatorController_Stop_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveBackward_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveForward_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveBackward_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveForward_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(1000, finger.actuatorPosition);
-	TEST_ASSERT_EQUAL_INT(DIRECTION_BACKWARD, finger.requiredDirectionMotion);
+	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
 }
 
 TEST(Finger, Finger_Given_SettingsPositionForward_When_UpdatesPosition_Then_PositionSet) 
@@ -166,8 +166,8 @@ TEST(Finger, Finger_Given_SettingsPositionForward_When_UpdatesPosition_Then_Posi
 	ActuatorController_GetFeedback_fake.return_val = 850;
 	Finger_UpdatePosition(&finger);
 
-	if (ActuatorController_MoveForward_fake.call_count == 1) {
-		finger.actuatorInfo.currentDirection = DIRECTION_FORWARD;
+	if (ActuatorController_MoveBackward_fake.call_count == 1) {
+		finger.actuatorInfo.currentDirection = DIRECTION_BACKWARD;
 	}
 
 	ActuatorController_GetFeedback_fake.return_val = 800;
@@ -196,10 +196,10 @@ TEST(Finger, Finger_Given_SettingsPositionForward_When_UpdatesPosition_Then_Posi
 	TEST_ASSERT_EQUAL_INT(FINGER_SET, finger.status);
 	TEST_ASSERT_EQUAL_INT(8, ActuatorController_GetFeedback_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(1, ActuatorController_Stop_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveBackward_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveForward_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveBackward_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveForward_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(700, finger.actuatorPosition);
-	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
+	TEST_ASSERT_EQUAL_INT(DIRECTION_BACKWARD, finger.requiredDirectionMotion);
 }
 
 TEST(Finger, Finger_Given_SettingsPositionForwardWithinDesyncronizationLimit_When_UpdatesPosition_Then_PositionSetWithoutMovement) 
@@ -255,7 +255,7 @@ TEST(Finger, Finger_Given_SettingsPositionForwardInProgress_When_UpdatesPosition
 {
 	// Given
 	FingerStruct finger = create_finger_mock();
-	finger.requiredActuatorPosition = 700;
+	finger.requiredActuatorPosition = 1100;
 	finger.status = FINGER_REQUEST_SET_POSITION;
 	finger.actuatorInfo.currentDirection = DIRECTION_NONE;
 
@@ -265,70 +265,12 @@ TEST(Finger, Finger_Given_SettingsPositionForwardInProgress_When_UpdatesPosition
 	ActuatorController_GetFeedback_fake.return_val = 900;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 850;
+	ActuatorController_GetFeedback_fake.return_val = 810;
 	Finger_UpdatePosition(&finger);
 
 	if (ActuatorController_MoveForward_fake.call_count == 1) {
 		finger.actuatorInfo.currentDirection = DIRECTION_FORWARD;
 	}
-
-	ActuatorController_GetFeedback_fake.return_val = 800;
-	Finger_UpdatePosition(&finger);
-
-	ActuatorController_GetFeedback_fake.return_val = 790;
-	Finger_UpdatePosition(&finger);
-
-	ActuatorController_GetFeedback_fake.return_val = 780;
-	Finger_UpdatePosition(&finger);
-
-	ActuatorController_GetFeedback_fake.return_val = 777;
-	Finger_UpdatePosition(&finger);
-
-	ActuatorController_GetFeedback_fake.return_val = 760;
-	Finger_UpdatePosition(&finger);
-
-	ActuatorController_GetFeedback_fake.return_val = 760;
-	Finger_UpdatePosition(&finger);
-
-	// Then
-	TEST_ASSERT_EQUAL_INT(FINGER_SETTING_POSITION, finger.status);
-	TEST_ASSERT_EQUAL_INT(8, ActuatorController_GetFeedback_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(0, ActuatorController_Stop_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveBackward_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveForward_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(760, finger.actuatorPosition);
-	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
-}
-
-TEST(Finger, Finger_Given_SettingsPositionBackwardInProgress_When_UpdatesPosition_Then_SettingsPositionState) 
-{
-	// Given
-	FingerStruct finger = create_finger_mock();
-	finger.requiredActuatorPosition = 1000;
-	finger.status = FINGER_REQUEST_SET_POSITION;
-	finger.actuatorInfo.currentDirection = DIRECTION_NONE;
-
-	// When
-
-	// First call change state from FINGER_REQUEST_SET_POSITION to FINGER_SETTING_POSITION
-	ActuatorController_GetFeedback_fake.return_val = 800;
-	Finger_UpdatePosition(&finger);
-
-	ActuatorController_GetFeedback_fake.return_val = 850;
-	Finger_UpdatePosition(&finger);
-
-	if (ActuatorController_MoveBackward_fake.call_count == 1) {
-		finger.actuatorInfo.currentDirection = DIRECTION_BACKWARD;
-	}
-
-	ActuatorController_GetFeedback_fake.return_val = 890;
-	Finger_UpdatePosition(&finger);
-
-	ActuatorController_GetFeedback_fake.return_val = 900;
-	Finger_UpdatePosition(&finger);
-
-	ActuatorController_GetFeedback_fake.return_val = 910;
-	Finger_UpdatePosition(&finger);
 
 	ActuatorController_GetFeedback_fake.return_val = 920;
 	Finger_UpdatePosition(&finger);
@@ -339,21 +281,79 @@ TEST(Finger, Finger_Given_SettingsPositionBackwardInProgress_When_UpdatesPositio
 	ActuatorController_GetFeedback_fake.return_val = 940;
 	Finger_UpdatePosition(&finger);
 
+	ActuatorController_GetFeedback_fake.return_val = 1000;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 1030;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 1040;
+	Finger_UpdatePosition(&finger);
+
 	// Then
-	TEST_ASSERT_EQUAL_INT(FINGER_SETTING_POSITION, finger.status);
+	TEST_ASSERT_EQUAL_INT(1040, finger.actuatorPosition);
 	TEST_ASSERT_EQUAL_INT(8, ActuatorController_GetFeedback_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
+	TEST_ASSERT_EQUAL_INT(0, ActuatorController_Stop_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveBackward_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveForward_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(FINGER_SETTING_POSITION, finger.status);
+}
+
+TEST(Finger, Finger_Given_SettingsPositionBackwardInProgress_When_UpdatesPosition_Then_SettingsPositionState) 
+{
+	// Given
+	FingerStruct finger = create_finger_mock();
+	finger.requiredActuatorPosition = 600;
+	finger.status = FINGER_REQUEST_SET_POSITION;
+	finger.actuatorInfo.currentDirection = DIRECTION_NONE;
+
+	// When
+
+	// First call change state from FINGER_REQUEST_SET_POSITION to FINGER_SETTING_POSITION
+	ActuatorController_GetFeedback_fake.return_val = 800;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 790;
+	Finger_UpdatePosition(&finger);
+
+	if (ActuatorController_MoveBackward_fake.call_count == 1) {
+		finger.actuatorInfo.currentDirection = DIRECTION_BACKWARD;
+	}
+
+	ActuatorController_GetFeedback_fake.return_val = 780;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 770;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 750;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 700;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 670;
+	Finger_UpdatePosition(&finger);
+
+	ActuatorController_GetFeedback_fake.return_val = 660;
+	Finger_UpdatePosition(&finger);
+
+	// Then
+	TEST_ASSERT_EQUAL_INT(8, ActuatorController_GetFeedback_fake.call_count);
+	TEST_ASSERT_EQUAL_INT(660, finger.actuatorPosition);
+	TEST_ASSERT_EQUAL_INT(DIRECTION_BACKWARD, finger.requiredDirectionMotion);
 	TEST_ASSERT_EQUAL_INT(0, ActuatorController_Stop_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveBackward_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveForward_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(940, finger.actuatorPosition);
-	TEST_ASSERT_EQUAL_INT(DIRECTION_BACKWARD, finger.requiredDirectionMotion);
+	TEST_ASSERT_EQUAL_INT(FINGER_SETTING_POSITION, finger.status);
 }
 
 TEST(Finger, Finger_Given_SettingsPositionForward_When_UpdatePositionAndCurrentPositionBeyondRequired_Then_PositionSetState) 
 {
 	// Given
 	FingerStruct finger = create_finger_mock();
-	finger.requiredActuatorPosition = 700;
+	finger.requiredActuatorPosition = 1000;
 	finger.status = FINGER_REQUEST_SET_POSITION;
 	finger.actuatorInfo.currentDirection = DIRECTION_NONE;
 
@@ -363,29 +363,29 @@ TEST(Finger, Finger_Given_SettingsPositionForward_When_UpdatePositionAndCurrentP
 	ActuatorController_GetFeedback_fake.return_val = 900;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 850;
+	ActuatorController_GetFeedback_fake.return_val = 950;
 	Finger_UpdatePosition(&finger);
 
 	if (ActuatorController_MoveForward_fake.call_count == 1) {
 		finger.actuatorInfo.currentDirection = DIRECTION_FORWARD;
 	}
 
-	ActuatorController_GetFeedback_fake.return_val = 800;
+	ActuatorController_GetFeedback_fake.return_val = 990;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 750;
+	ActuatorController_GetFeedback_fake.return_val = 1050;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 650;
+	ActuatorController_GetFeedback_fake.return_val = 1060;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 670;
+	ActuatorController_GetFeedback_fake.return_val = 1080;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 680;
+	ActuatorController_GetFeedback_fake.return_val = 1090;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 690;
+	ActuatorController_GetFeedback_fake.return_val = 1095;
 	Finger_UpdatePosition(&finger);
 
 	if (ActuatorController_Stop_fake.call_count == 1) {
@@ -393,13 +393,13 @@ TEST(Finger, Finger_Given_SettingsPositionForward_When_UpdatePositionAndCurrentP
 	}
 
 	// Then
-	TEST_ASSERT_EQUAL_INT(FINGER_SET, finger.status);
+	TEST_ASSERT_EQUAL_INT(1095, finger.actuatorPosition);
+	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
 	TEST_ASSERT_EQUAL_INT(8, ActuatorController_GetFeedback_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(1, ActuatorController_Stop_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveBackward_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveForward_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(690, finger.actuatorPosition);
-	TEST_ASSERT_EQUAL_INT(DIRECTION_FORWARD, finger.requiredDirectionMotion);
+	TEST_ASSERT_EQUAL_INT(FINGER_SET, finger.status);
 }
 
 TEST(Finger, Finger_Given_SettingsPositionBackward_When_UpdatePositionAndCurrentPositionBeyondRequired_Then_PositionSetState) 
@@ -413,32 +413,32 @@ TEST(Finger, Finger_Given_SettingsPositionBackward_When_UpdatePositionAndCurrent
 	// When
 
 	// First call change state from FINGER_REQUEST_SET_POSITION to FINGER_SETTING_POSITION
-	ActuatorController_GetFeedback_fake.return_val = 800;
+	ActuatorController_GetFeedback_fake.return_val = 1200;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 850;
+	ActuatorController_GetFeedback_fake.return_val = 1100;
 	Finger_UpdatePosition(&finger);
 
 	if (ActuatorController_MoveBackward_fake.call_count == 1) {
 		finger.actuatorInfo.currentDirection = DIRECTION_BACKWARD;
 	}
 
-	ActuatorController_GetFeedback_fake.return_val = 900;
+	ActuatorController_GetFeedback_fake.return_val = 1000;
 	Finger_UpdatePosition(&finger);
 
 	ActuatorController_GetFeedback_fake.return_val = 950;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 1050;
+	ActuatorController_GetFeedback_fake.return_val = 930;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 1070;
+	ActuatorController_GetFeedback_fake.return_val = 920;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 1080;
+	ActuatorController_GetFeedback_fake.return_val = 925;
 	Finger_UpdatePosition(&finger);
 
-	ActuatorController_GetFeedback_fake.return_val = 1090;
+	ActuatorController_GetFeedback_fake.return_val = 910;
 	Finger_UpdatePosition(&finger);
 
 	if (ActuatorController_Stop_fake.call_count == 1) {
@@ -451,7 +451,7 @@ TEST(Finger, Finger_Given_SettingsPositionBackward_When_UpdatePositionAndCurrent
 	TEST_ASSERT_EQUAL_INT(1, ActuatorController_Stop_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(1, ActuatorController_MoveBackward_fake.call_count);
 	TEST_ASSERT_EQUAL_INT(0, ActuatorController_MoveForward_fake.call_count);
-	TEST_ASSERT_EQUAL_INT(1090, finger.actuatorPosition);
+	TEST_ASSERT_EQUAL_INT(910, finger.actuatorPosition);
 	TEST_ASSERT_EQUAL_INT(DIRECTION_BACKWARD, finger.requiredDirectionMotion);
 }
 

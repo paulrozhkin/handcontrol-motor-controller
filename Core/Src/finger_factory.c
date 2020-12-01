@@ -14,7 +14,7 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 			HandStorage_GetFeedback();
 
 	GPIO_TypeDef *commonGpioEnable = GPIOC;
-	uint16_t commonPinEnable = 13;
+	uint16_t commonPinEnable = GPIO_PIN_13;
 
 	switch (fingerName) {
 	// MOTOR 1
@@ -25,7 +25,8 @@ void FingerFactory_CreateFinger(FingerStruct *finger,
 				feedbackLimits.littleFingerFeedback.forwardFeedbackLimit,
 				feedbackReader,
 				GPIOB, GPIO_PIN_10,
-				GPIOB, GPIO_PIN_11, commonGpioEnable, commonPinEnable);
+				GPIOB, GPIO_PIN_11,
+				commonGpioEnable, commonPinEnable);
 
 		Finger_Init(finger, littleActuator);
 		break;
