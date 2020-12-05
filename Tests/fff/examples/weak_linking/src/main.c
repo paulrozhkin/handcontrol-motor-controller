@@ -21,7 +21,7 @@ int update_main( void )
 
     char buffer[32];
     float reading = sensor_read();
-    snprintf( buffer, 32, "Sensor: %0.1f", reading );
+    // snprintf( buffer, 32, "Sensor: %0.1f", reading );
     display_update( buffer );
     return 0;
 }

@@ -60,9 +60,12 @@ SRC_FILES1=\
   $(SRC_ROOT)/hand_storage.c \
   $(SRC_ROOT)/finger.c \
   $(SRC_ROOT)/position_to_feedback_converter.c -lm \
+  $(SRC_ROOT)/crc8.c \
   $(TEST_ROOT)/TestPositionToFeedbackConverter.c \
   $(TEST_ROOT)/TestFinger.c \
+  $(TEST_ROOT)/TestCrc8.c \
   $(TEST_ROOT)/test_runners/TestPositionToFeedbackConverter_Runner.c \
+  $(TEST_ROOT)/test_runners/TestCrc8_Runner.c \
   $(TEST_ROOT)/test_runners/TestFinger_Runner.c \
   $(TEST_ROOT)/test_runners/all_tests.c
 INC_DIRS=-Isrc -I$(UNITY_ROOT)/src -I$(HEADER_ROOT) -I$(FFF_ROOT) -I$(DRIVERS_ROOT) -I$(ST_ROOT) -I$(CMSIS_ROOT) -I$(UNITY_ROOT)/extras/fixture/src

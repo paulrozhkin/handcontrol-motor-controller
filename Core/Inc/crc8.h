@@ -8,6 +8,9 @@
 #ifndef INC_CRC8_H_
 #define INC_CRC8_H_
 
-unsigned char calculate_crc8(unsigned char *data, unsigned int length);
+#include <stdint.h>
+#include <stddef.h>
+
+uint8_t calculate_crc8(const uint8_t* data, size_t length);
 
 #endif /* INC_CRC8_H_ */
