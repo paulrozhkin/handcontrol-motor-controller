@@ -31,9 +31,9 @@ void Finger_UpdatePosition(FingerStruct *finger) {
 	case FINGER_REQUEST_SET_POSITION: {
 		// Если запрашиваемое положение корректное.
 		if (finger->requiredActuatorPosition
-				>= finger->actuatorInfo.forwardFeedbackLimit
+				>= finger->actuatorInfo.backwardFeedbackLimit
 				&& finger->requiredActuatorPosition
-						<= finger->actuatorInfo.backwardFeedbackLimit) {
+						<= finger->actuatorInfo.forwardFeedbackLimit) {
 
 			// Если мы находимся в пределах половины смещения дессинхронизации (~2.5 градуса), то двигаться не надо,
 			// т.к. мы не может установить подобную точность.
@@ -44,10 +44,10 @@ void Finger_UpdatePosition(FingerStruct *finger) {
 			}
 
 			// Устанвливаем направление движения
-			if (finger->requiredActuatorPosition >= finger->actuatorPosition) {
-				finger->requiredDirectionMotion = DIRECTION_FORWARD;
-			} else {
+			if (finger->requiredActuatorPosition <= finger->actuatorPosition) {
 				finger->requiredDirectionMotion = DIRECTION_BACKWARD;
+			} else {
+				finger->requiredDirectionMotion = DIRECTION_FORWARD;
 			}
 
 			finger->countEqualsCurrentAndRequiredActuatorPosition = 0;

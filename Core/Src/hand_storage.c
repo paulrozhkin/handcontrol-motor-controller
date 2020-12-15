@@ -14,23 +14,23 @@ void HandStorage_SaveFeedback(HandStorageFingersFeedbackDaoStruct feedback) {
 HandStorageFingersFeedbackDaoStruct HandStorage_GetFeedback(void) {
 	HandStorageFingersFeedbackDaoStruct result;
 
-	result.littleFingerFeedback.backwardFeedbackLimit = 4095;
-	result.littleFingerFeedback.forwardFeedbackLimit = 0;
+	result.littleFingerFeedback.forwardFeedbackLimit = 3800;
+	result.littleFingerFeedback.backwardFeedbackLimit = 300;
 
-	result.ringFingerFeedback.backwardFeedbackLimit = 4095;
-	result.ringFingerFeedback.forwardFeedbackLimit = 0;
+	result.ringFingerFeedback.forwardFeedbackLimit = 3800;
+	result.ringFingerFeedback.backwardFeedbackLimit = 300;
 
-	result.middleFingerFeedback.backwardFeedbackLimit = 4095;
-	result.middleFingerFeedback.forwardFeedbackLimit = 0;
+	result.middleFingerFeedback.forwardFeedbackLimit = 3800;
+	result.middleFingerFeedback.backwardFeedbackLimit = 300;
 
-	result.indexFingerFeedback.backwardFeedbackLimit = 4095;
-	result.indexFingerFeedback.forwardFeedbackLimit = 0;
+	result.indexFingerFeedback.forwardFeedbackLimit = 3800;
+	result.indexFingerFeedback.backwardFeedbackLimit = 300;
 
-	result.thumbFingerFeedback.backwardFeedbackLimit = 4095;
-	result.thumbFingerFeedback.forwardFeedbackLimit = 0;
+	result.thumbFingerFeedback.forwardFeedbackLimit = 3800;
+	result.thumbFingerFeedback.backwardFeedbackLimit = 300;
 
-	result.thumbEjectorFeedback.backwardFeedbackLimit = 4095;
-	result.thumbEjectorFeedback.forwardFeedbackLimit = 0;
+	result.thumbEjectorFeedback.forwardFeedbackLimit = 3800;
+	result.thumbEjectorFeedback.backwardFeedbackLimit = 300;
 
 	return result;
 }

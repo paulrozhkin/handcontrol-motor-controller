@@ -82,7 +82,7 @@ enum ProtocolCommand {
 /* SPI протокол. */
 typedef struct {
 	enum ProtocolCommand Command;
-	//enum TypeWork CurrentRegime;
+	enum HandStateType CurrentRegime;
 	uint8_t data[24];
 	uint8_t CRC8;
 } ProtocolStruct;
@@ -360,7 +360,7 @@ void ProtocolParser() {
 		newPositions.thumbEjectorAnglePosition = receiveData.data[5];
 
 		if (xQueueSend(newAnglePositionsQueue, (void* )&newPositions,
-				pdMS_TO_TICKS(1)) != pdPASS) {
+				pdMS_TO_TICKS(3)) != pdPASS) {
 			HandController_Error(&handConfig);
 		}
 		break;

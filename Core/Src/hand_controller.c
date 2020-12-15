@@ -138,8 +138,9 @@ void HandController_SetAnglePositions(HandStruct *hand,
 HandAnglePositionsStruct HandController_GetAnglePositions(HandStruct *hand) {
 	HandAnglePositionsStruct result;
 	result.littleFingerAnglePosition = Finger_GetAnglePosition(
-			&hand->indexFinger);
-	result.ringFingerAnglePosition = Finger_GetAnglePosition(&hand->ringFinger);
+			&hand->littleFinger);
+	result.ringFingerAnglePosition = Finger_GetAnglePosition(
+			&hand->ringFinger);
 	result.middleFingerAnglePosition = Finger_GetAnglePosition(
 			&hand->middleFinger);
 	result.indexFingerAnglePosition = Finger_GetAnglePosition(

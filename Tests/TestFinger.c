@@ -481,7 +481,7 @@ TEST(Finger, Finger_Given_NewAnglePosition_When_SetNewAnglePosition_Then_Setting
 	FingerStruct finger2 = create_finger_mock();
 	finger2.status = FINGER_REQUIRED_EMPTY;
 	FingerPositionUnit anglePosition2 = 222;
-	FeedbackUnit expectedPosition2 = finger2.actuatorInfo.backwardFeedbackLimit;
+	FeedbackUnit expectedPosition2 = finger2.actuatorInfo.forwardFeedbackLimit;
 
 	// When
 	Finger_SetNewAnglePosition(&finger, anglePosition);
@@ -501,8 +501,8 @@ FingerStruct create_finger_mock(void)
 	FingerStruct finger;
 	finger.requiredDirectionMotion = DIRECTION_NONE;
 	finger.status = FINGER_REQUIRED_EMPTY;
-	finger.actuatorInfo.backwardFeedbackLimit = 4000;
-	finger.actuatorInfo.forwardFeedbackLimit = 400;
+	finger.actuatorInfo.backwardFeedbackLimit = 400;
+	finger.actuatorInfo.forwardFeedbackLimit = 4000;
 	finger.actuatorInfo.feedbackUnitPerAngle = 20;
 	finger.actuatorInfo.currentDirection = DIRECTION_NONE;
 	return finger;

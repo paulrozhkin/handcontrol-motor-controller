@@ -17,10 +17,10 @@ FingerPositionUnit PositionToFeedbackConverter_ConvertBack(
 		return 0;
 	}
 
-	if (feedback >= forwardFeedbackLimit && feedback <= backwardFeedbackLimit) {
+	if (feedback >= backwardFeedbackLimit && feedback <= forwardFeedbackLimit) {
 		return (FingerPositionUnit) round(
-				(feedback - forwardFeedbackLimit) / feedbackUnitPerAngle);
-	} else if (feedback < forwardFeedbackLimit) {
+				(feedback - backwardFeedbackLimit) / feedbackUnitPerAngle);
+	} else if (feedback < backwardFeedbackLimit) {
 		return 0;
 	} else {
 		return 180;
@@ -36,14 +36,14 @@ FeedbackUnit PositionToFeedbackConverter_Convert(FingerPositionUnit position,
 	}
 
 	if (position <= 0) {
-		return forwardFeedbackLimit;
-	}
-
-	if (position >= 180) {
 		return backwardFeedbackLimit;
 	}
 
-	return (FeedbackUnit) round((position * feedbackUnitPerAngle)) + forwardFeedbackLimit;
+	if (position >= 180) {
+		return forwardFeedbackLimit;
+	}
+
+	return (FeedbackUnit) round((position * feedbackUnitPerAngle)) + backwardFeedbackLimit;
 }
 
 double PositionToFeedbackConverter_GetUnitPerAngle(FeedbackUnit backwardFeedbackLimit, FeedbackUnit forwardFeedbackLimit)

@@ -72,32 +72,32 @@ TEST(PositionToFeedbackConverter, PositionToFeedbackConverter_Given_FeedbackWith
 	// Given
 	FingerPositionUnit excpectedPosition1 = 90;
 	FeedbackUnit feedback1 = 2047;
-	FeedbackUnit backwardFeedbackLimit1 = 4095;
-	FeedbackUnit forwardFeedbackLimit1 = 0;
+	FeedbackUnit backwardFeedbackLimit1 = 0;
+	FeedbackUnit forwardFeedbackLimit1 = 4095;
 	double feedbackUnitPerAngle1 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit1, forwardFeedbackLimit1);
 
 	FingerPositionUnit excpectedPosition2 = 45;
 	FeedbackUnit feedback2 = 1144;
-	FeedbackUnit backwardFeedbackLimit2 = 3900;
-	FeedbackUnit forwardFeedbackLimit2 = 230;
+	FeedbackUnit backwardFeedbackLimit2 = 230;
+	FeedbackUnit forwardFeedbackLimit2 = 3900;
 	double feedbackUnitPerAngle2 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit2, forwardFeedbackLimit2);
 
 	FingerPositionUnit excpectedPosition3 = 36;
 	FeedbackUnit feedback3 = 1023;
-	FeedbackUnit backwardFeedbackLimit3 = 4024;
-	FeedbackUnit forwardFeedbackLimit3 = 266;
+	FeedbackUnit backwardFeedbackLimit3 = 266;
+	FeedbackUnit forwardFeedbackLimit3 = 4024;
 	double feedbackUnitPerAngle3 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit3, forwardFeedbackLimit3);
 
 	FingerPositionUnit excpectedPosition4 = 180;
 	FeedbackUnit feedback4 = 3000;
-	FeedbackUnit backwardFeedbackLimit4 = 3000;
-	FeedbackUnit forwardFeedbackLimit4 = 2000;
+	FeedbackUnit backwardFeedbackLimit4 = 2000;
+	FeedbackUnit forwardFeedbackLimit4 = 3000;
 	double feedbackUnitPerAngle4 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit4, forwardFeedbackLimit4);
 
 	FingerPositionUnit excpectedPosition5 = 0;
 	FeedbackUnit feedback5 = 2500;
-	FeedbackUnit backwardFeedbackLimit5 = 3500;
-	FeedbackUnit forwardFeedbackLimit5 = 2500;
+	FeedbackUnit backwardFeedbackLimit5 = 2500;
+	FeedbackUnit forwardFeedbackLimit5 = 3500;
 	double feedbackUnitPerAngle5 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit5, forwardFeedbackLimit5);
 	
 	// When
@@ -125,14 +125,14 @@ TEST(PositionToFeedbackConverter, PositionToFeedbackConverter_Given_FeedbackNoWi
 	// Given
 	FingerPositionUnit excpectedPosition1 = 0;
 	FeedbackUnit feedback1 = 150;
-	FeedbackUnit backwardFeedbackLimit1 = 3600;
-	FeedbackUnit forwardFeedbackLimit1 = 1000;
+	FeedbackUnit backwardFeedbackLimit1 = 1000;
+	FeedbackUnit forwardFeedbackLimit1 = 3600;
 	double feedbackUnitPerAngle1 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit1, forwardFeedbackLimit1);
 
 	FingerPositionUnit excpectedPosition2 = 180;
 	FeedbackUnit feedback2 = 4000;
-	FeedbackUnit backwardFeedbackLimit2 = 3800;
-	FeedbackUnit forwardFeedbackLimit2 = 1000;
+	FeedbackUnit backwardFeedbackLimit2 = 1000;
+	FeedbackUnit forwardFeedbackLimit2 = 3800;
 	double feedbackUnitPerAngle2 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit2, forwardFeedbackLimit2);
 	
 	// When
@@ -166,14 +166,14 @@ TEST(PositionToFeedbackConverter, PositionToFeedbackConverter_Given_PositionAndN
 TEST(PositionToFeedbackConverter, PositionToFeedbackConverter_Given_IncorrectPositions_When_Convert_Then_Limits)
 {
 	// Given
-	FeedbackUnit backwardFeedbackLimit = 3000;
-	FeedbackUnit forwardFeedbackLimit = 2000;
+	FeedbackUnit backwardFeedbackLimit = 2000;
+	FeedbackUnit forwardFeedbackLimit = 3000;
 	double feedbackUnitPerAngle = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit, forwardFeedbackLimit);
 
-	FeedbackUnit excpectedFeedback1 = backwardFeedbackLimit;
+	FeedbackUnit excpectedFeedback1 = forwardFeedbackLimit;
 	FingerPositionUnit position1 = 255;
 	
-	FeedbackUnit excpectedFeedback2 = backwardFeedbackLimit;
+	FeedbackUnit excpectedFeedback2 = forwardFeedbackLimit;
 	FingerPositionUnit position2 = 195;
 
 	// When
@@ -192,32 +192,32 @@ TEST(PositionToFeedbackConverter, PositionToFeedbackConverter_Given_PositionsAnd
 {
 	// Given
 	FingerPositionUnit position1 = 0;
-	FeedbackUnit backwardFeedbackLimit1 = 3000;
-	FeedbackUnit forwardFeedbackLimit1 = 2000;
-	FeedbackUnit excpectedFeedback1 = forwardFeedbackLimit1;
+	FeedbackUnit backwardFeedbackLimit1 = 2000;
+	FeedbackUnit forwardFeedbackLimit1 = 3000;
+	FeedbackUnit excpectedFeedback1 = backwardFeedbackLimit1;
 	double feedbackUnitPerAngle1 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit1, forwardFeedbackLimit1);
 
 	FingerPositionUnit position2 = 180;
-	FeedbackUnit backwardFeedbackLimit2 = 3333;
-	FeedbackUnit forwardFeedbackLimit2 = 2111;
-	FeedbackUnit excpectedFeedback2 = backwardFeedbackLimit2;
+	FeedbackUnit backwardFeedbackLimit2 = 2111;
+	FeedbackUnit forwardFeedbackLimit2 = 3333;
+	FeedbackUnit excpectedFeedback2 = forwardFeedbackLimit2;
 	double feedbackUnitPerAngle2 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit2, forwardFeedbackLimit2);
 
 	FingerPositionUnit position3 = 90;
-	FeedbackUnit backwardFeedbackLimit3 = 3800;
-	FeedbackUnit forwardFeedbackLimit3 = 200;
+	FeedbackUnit backwardFeedbackLimit3 = 200;
+	FeedbackUnit forwardFeedbackLimit3 = 3800;
 	FeedbackUnit excpectedFeedback3 = 2000;
 	double feedbackUnitPerAngle3 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit3, forwardFeedbackLimit3);
 
 	FingerPositionUnit position4 = 55;
-	FeedbackUnit backwardFeedbackLimit4 = 4000;
-	FeedbackUnit forwardFeedbackLimit4 = 300;
+	FeedbackUnit backwardFeedbackLimit4 = 300;
+	FeedbackUnit forwardFeedbackLimit4 = 4000;
 	FeedbackUnit excpectedFeedback4 = 1431;
 	double feedbackUnitPerAngle4 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit4, forwardFeedbackLimit4);
 
 	FingerPositionUnit position5 = 147;
-	FeedbackUnit backwardFeedbackLimit5 = 3500;
-	FeedbackUnit forwardFeedbackLimit5 = 500;
+	FeedbackUnit backwardFeedbackLimit5 = 500;
+	FeedbackUnit forwardFeedbackLimit5 = 3500;
 	FeedbackUnit excpectedFeedback5 = 2950;
 	double feedbackUnitPerAngle5 = PositionToFeedbackConverter_GetUnitPerAngle(backwardFeedbackLimit5, forwardFeedbackLimit5);
 
